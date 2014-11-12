@@ -3,7 +3,7 @@
 Trie-Search
 ==========
 
-A Trie is a data structure designed for rapid reTRIEval of objects.
+A Trie is a data structure designed for rapid reTRIEval of objects. This was designed for use with a typeahead search.
 
 Most Trie implementations in NPM right now only let you add and then determine if a word or phrase exists in the Trie.
 
