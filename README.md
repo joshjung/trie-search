@@ -11,8 +11,10 @@ This data structure allows you to map keys to objects, allowing rapid search of 
 
 Note: as of now, keys are split along word boundaries! For example, if your key is 'the quick brown fox', the TrieSearch will be searchable by 'the', 'quick', 'brown', or 'fox'.
 
-`new TrieSearch(keyFields, options)`
-====================================
+Setup
+=====
+
+**`new TrieSearch(keyFields, options)`**
 
 `keyFields`: a single string or an array of strings representing what fields on added objects are to be used as keys for the trie search.
 `options`:
