@@ -1,0 +1,32 @@
+{
+  "name": "trie-search",
+  "author": "Joshua Jung <joshua.p.jung@gmail.com>",
+  "license": "MIT",
+  "description": "A trie implementation that maps keys to objects. Most common use will be for typeahead searches.",
+  "version": "0.0.1",
+  "main": "index.js",
+  "url": "https://github.com/joshjung/trie-search",
+  "homepage": "https://github.com/joshjung/trie-search",
+  "email": "joshua.p.jung@gmail.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joshjung/trie-search.git"
+  },
+  "files": {
+    "performance.js",
+    "dictionary.json"
+  },
+  "keywords": [
+    "trie",
+    "search",
+    "typeahead",
+    "type",
+    "ahead",
+    "hash",
+    "map",
+    "hashtable"
+  ],
+  "dependencies": {
+    "hasharray": "^0.2.4"
+  }
+}
