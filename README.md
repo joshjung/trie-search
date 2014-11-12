@@ -104,7 +104,7 @@ Testing
 
       ․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․
 
-      61 passing (25ms)
+      21 passing (25ms)
 
 License
 =======
