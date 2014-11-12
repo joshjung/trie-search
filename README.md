@@ -17,6 +17,7 @@ Setup
 **`new TrieSearch(keyFields, options)`**
 
 `keyFields`: a single string or an array of strings representing what fields on added objects are to be used as keys for the trie search.
+
 `options`:
 
     {
@@ -70,6 +71,30 @@ Example 2 (add items)
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
     ts.get('andre'); // Returns only andrew.
 
+Example 3 (options.min == 3)
+======================
+
+    var TrieSearch = require('trie-search', {min: 3});
+
+    var objects = [
+      {name: 'andrew', age: 21},
+      {name: 'andy', age: 37},
+      {name: 'andrea', age: 25},
+      {name: 'annette', age: 67}
+    ];
+
+    var ts = new TrieSearch('name');
+
+    objects.forEach(function (item) {
+      ts.add(item);
+    });
+
+    ts.get('a'); // Returns empty array, too short of search
+    ts.get('an'); // Returns empty array, too short of search
+    ts.get('and'); // Returns all 3 items above that begin with 'and'
+    ts.get('andr'); // Returns all 2 items above that begin with 'andr'
+    ts.get('andre'); // Returns only andrew.
+    
 Testing
 =======
 
