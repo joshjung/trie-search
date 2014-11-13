@@ -18,11 +18,12 @@ Setup
 
 `keyFields`: a single string or an array of strings representing what fields on added objects are to be used as keys for the trie search.
 
-`options`:
+`options`: settings to provide to the TrieSearch. To be expanded as functionality grows, but current structure is:
 
     {
-      min: # // Minimum length of a key to store and search. By default this is 1, but you might improve performance by using 2 or 3
-      ignoreCase: true OR false // Defaults to true
+      min: 1,  // Minimum length of a key to store and search. By default this is 1, but you might improve performance by using 2 or 3
+      ignoreCase: true,
+      indexField: undefined // Defaults to undefined. If specified, determines which rows are unique when using get().
     }
 
 Example 1 (from Object)
@@ -95,6 +96,30 @@ Example 3 (options.min == 3)
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
     ts.get('andre'); // Returns only andrew.
     
+Example 4 (options.indexField = 'ix')
+======================
+
+By default, the HashArray object (which TrieSearch uses) does not - for the sake of speed - verify object uniqueness by the object itself, but instead by a field on that object.
+
+As a result, in order for `get()` to be used with multiple words, it is important that a field is used to identify each record in the TrieSearch, similar to a index in a database.
+
+    var TrieSearch = require('trie-search', {min: 3, indexField: 'ix'});
+
+    var objects = [
+      {ix: 1, name: 'andrew', location: 'sweden', age: 21},
+      {ix: 2, name: 'andrew', location: 'brussels', age: 37},
+      {ix: 3, name: 'andrew', location: 'johnsonville', age: 25}
+    ];
+
+    var ts = new TrieSearch('name');
+
+    objects.forEach(function (item) {
+      ts.add(item);
+    });
+
+    ts.get('andrew');        // Returns all items
+    ts.get('andrew sweden'); // Returns all items without indexField. Returns only andrew in sweden with indexField.
+
 Testing
 =======
 
@@ -104,7 +129,7 @@ Testing
 
       ․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․
 
-      21 passing (25ms)
+      37 passing (25ms)
 
 License
 =======

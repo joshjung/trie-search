@@ -96,26 +96,35 @@ TrieSearch.prototype = {
       return f(keyArr, node[k]);
     }
   },
-  get: function (key) {
-    key = this.options.ignoreCase ? key.toLowerCase() : key;
+  get: function (phrase) {
+    phrase = this.options.ignoreCase ? phrase.toLowerCase() : phrase;
 
-    var ha = new HashArray(this.keyFields),
-      node = this.findNode(key);
+    var ret = undefined,
+      haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields;
+      words = phrase.split(/\s/g);
 
-    if (!node)
-      return [];
+    for (var w = 0, l = words.length; w < l; w++)
+    {
+      if (this.options.min && words[w].length < this.options.min)
+        continue;
 
-    aggregate(node);
+      var temp = new HashArray(haKeyFields);
+
+      if (node = this.findNode(words[w]))
+        aggregate(node, temp);
+
+      ret = ret ? ret.union(temp) : temp;
+    }
     
-    return ha.all;
+    return ret ? ret.all : [];
     
-    function aggregate(node) {
+    function aggregate(node, ha) {
       if (node.value && node.value.length)
         ha.addAll(node.value);
 
       for (var k in node)
         if (k != 'value')
-          aggregate(node[k]);
+          aggregate(node[k], ha);
     }
   }
 };
