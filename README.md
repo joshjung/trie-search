@@ -69,9 +69,7 @@ Example 2 (add items)
 
     var ts = new TrieSearch('name');
 
-    objects.forEach(function (item) {
-      ts.add(item);
-    });
+    objects.forEach(ts.add);
 
     ts.get('a'); // Returns all 4 items above.
     ts.get('an'); // Returns all 4 items above.
@@ -93,9 +91,7 @@ Example 3 (options.min == 3)
 
     var ts = new TrieSearch('name');
 
-    objects.forEach(function (item) {
-      ts.add(item);
-    });
+    objects.forEach(ts.add);
 
     ts.get('a'); // Returns empty array, too short of search
     ts.get('an'); // Returns empty array, too short of search
@@ -120,12 +116,32 @@ As a result, in order for `get()` to be used with multiple words, it is importan
 
     var ts = new TrieSearch('name');
 
-    objects.forEach(function (item) {
-      ts.add(item);
-    });
+    objects.forEach(ts.add);
 
     ts.get('andrew');        // Returns all items
     ts.get('andrew sweden'); // Returns all items without indexField. Returns only andrew in sweden with indexField.
+
+Example 5 (get() OR of multiple phrases)
+======================
+
+    var TrieSearch = require('trie-search');
+
+    var objects = [
+      {name: 'andrew', age: 21, zip: 60600},
+      {name: 'andy', age: 37, zip: 60601},
+      {name: 'andrea', age: 25, zip: 60602},
+      {name: 'joseph', age: 67, zip: 60603}
+    ];
+
+    var ts = new TrieSearch(['name', 'age', 'zip']);
+
+    objects.forEach(ts.add);
+
+    ts.get('andre'); // Returns only andrew.
+    ts.get(['andre', '25']); // Returns andrew AND andrea
+    ts.get(['andre', 'jos']); // Returns andrew AND joseph
+    ts.get(['21', '67']); // Returns andrew AND joseph
+    ts.get(['21', '60603']); // Returns andrew AND joseph
 
 Testing
 =======

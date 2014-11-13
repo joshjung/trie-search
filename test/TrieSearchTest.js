@@ -142,6 +142,23 @@ describe('TrieSearch', function() {
 		});
 	});
   
+	describe('TrieSearch::get(...) should work for array of phrases', function() {
+    var ts = new TrieSearch('key', {min: 2}),
+      item1 = {key: 'the quick brown fox'},
+      item2 = {key: 'the quick brown'},
+      item3 = {key: 'the quick fox'},
+      item4 = {key: 'the fox'};
+
+    ts.add(item1);
+    ts.add(item2);
+    ts.add(item3);
+    ts.add(item4);
+
+		it('get([\'the brown\', \'quick\']) should return 3 entries', function() {
+			assert(ts.get(['the brown', 'quick']).length == 3);
+		});
+	});
+  
 	describe('TrieSearch::get(...) should work for multiple keys and union the result with an indexField', function() {
     var ts = new TrieSearch(['key', 'key2'], {min: 2, indexField: 'ix'}),
       item1 = {key: 'the quick brown fox', key2: 'jumped', ix: 1},

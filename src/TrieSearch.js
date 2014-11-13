@@ -98,9 +98,9 @@ TrieSearch.prototype = {
       return f(keyArr, node[k]);
     }
   },
-  get: function (phrase) {
+  _get: function (phrase) {
     phrase = this.options.ignoreCase ? phrase.toLowerCase() : phrase;
-
+    
     var ret = undefined,
       haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields;
       words = phrase.split(/\s/g);
@@ -128,6 +128,20 @@ TrieSearch.prototype = {
         if (k != 'value')
           aggregate(node[k], ha);
     }
+  },
+  get: function (phrases) {
+    var haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
+      ret = undefined;
+
+    phrases = (phrases instanceof Array) ? phrases : [phrases];
+
+    for (var i = 0, l = phrases.length; i < l; i++)
+    {
+      var temp = this._get(phrases[i]);
+      ret = ret ? ret.addAll(temp) : new HashArray(haKeyFields).addAll(temp);
+    }
+
+    return ret.all;
   }
 };
 
