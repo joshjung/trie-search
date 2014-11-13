@@ -71,6 +71,32 @@ describe('TrieSearch', function() {
 		});
 	});
   
+	describe('TrieSearch::add(...) and TrieSearch::get(...) should work for a single item with a numeric key', function() {
+    var ts = new TrieSearch('key'),
+      item = {key: 1234567890};
+
+    ts.add(item);
+
+		it('add(\'1234567890\') should build map of nodes', function() {
+			assert(ts.root['1'] !== undefined, '1 does not exist');
+      assert(ts.root['1']['2'] !== undefined, '12 does not exist');
+      assert(ts.root['1']['2']['3'] !== undefined, '123 does not exist');
+      assert(ts.root['1']['2']['3']['4'] !== undefined, '1234 does not exist');
+		});
+
+		it('get(\'1234567890\') for each subkey should work', function() {
+			assert.equal(ts.get('1')[0], item);
+      assert.equal(ts.get('12')[0], item);
+      assert.equal(ts.get('123')[0], item);
+      assert.equal(ts.get('1234')[0], item);
+      assert.equal(ts.get('1234')[0], item);
+      assert.equal(ts.get('12345')[0], item);
+      assert.equal(ts.get('123456')[0], item);
+      assert.equal(ts.get('1234567')[0], item);
+      assert.equal(ts.get('nope').length, 0);
+		});
+	});
+  
 	describe('TrieSearch::get(...) should work for multiple keys and union the result', function() {
     var ts = new TrieSearch('key', {min: 2}),
       item1 = {key: 'the quick brown fox'},

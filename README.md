@@ -26,6 +26,13 @@ Setup
       indexField: undefined // Defaults to undefined. If specified, determines which rows are unique when using get().
     }
 
+Supported Types
+===============
+
+All values are converted to a Javascript String object via the `.toString()` method before inserted into the Trie structure.
+
+So the values `'1234'` and `1234` are functionally equivalent.
+
 Example 1 (from Object)
 ======================
 

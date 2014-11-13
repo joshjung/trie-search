@@ -17,6 +17,8 @@ TrieSearch.prototype = {
         val = obj[key];
         
       if (!val) continue;
+      
+      val = val.toString();
 
       val = this.options.ignoreCase ? val.toLowerCase() : val;
 
