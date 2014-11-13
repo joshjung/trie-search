@@ -14,7 +14,11 @@ TrieSearch.prototype = {
     for (var k in this.keyFields)
     {
       var key = this.keyFields[k],
-        val = this.options.ignoreCase ? obj[key].toLowerCase() : obj[key];
+        val = obj[key];
+        
+      if (!val) continue;
+
+      val = this.options.ignoreCase ? val.toLowerCase() : val;
 
       phrases = val.split(/\s/g);
 
@@ -85,8 +89,9 @@ TrieSearch.prototype = {
     return f(this.keyToArr(key), this.root);
 
     function f(keyArr, node) {
+      if (!node) return undefined;
       if (keyArr.length == 0) return node;
-        
+
       var k = keyArr.shift();
       return f(keyArr, node[k]);
     }
@@ -98,7 +103,7 @@ TrieSearch.prototype = {
       node = this.findNode(key);
 
     if (!node)
-      throw Error('unable to find node for key: ' + key);
+      return [];
 
     aggregate(node);
     

@@ -66,6 +66,8 @@ describe('TrieSearch', function() {
       assert.equal(ts.get('bl')[0], item);
       assert.equal(ts.get('bla')[0], item);
       assert.equal(ts.get('blah')[0], item);
+      assert.equal(ts.get('blab').length, 0);
+      assert.equal(ts.get('nope').length, 0);
 		});
 	});
   
