@@ -1,16 +1,24 @@
 var HashArray = require('hasharray');
 
+var MAX_CACHE_SIZE = 64;
+
 var TrieSearch = function (keyFields, options) {
   this.options = options || {};
   // Default ignoreCase to true
   this.options.ignoreCase = (this.options.ignoreCase === undefined) ? true : this.options.ignoreCase;
+  this.options.maxCacheSize = this.options.maxCacheSize || MAX_CACHE_SIZE;
+  this.options.cache = this.options.hasOwnProperty('cache') ? this.options.cache : true;
   this.keyFields = keyFields ? (keyFields instanceof Array ? keyFields : [keyFields]) : [];
   this.root = {};
   this.size = 0;
+  this.getCache = new HashArray('key');
 };
 
 TrieSearch.prototype = {
   add: function (obj) {
+    if (this.options.cache)
+      this.clearCache();
+    
     for (var k in this.keyFields)
     {
       var key = this.keyFields[k],
@@ -32,7 +40,17 @@ TrieSearch.prototype = {
     this.root = {};
     this.size = 0;
   },
+  clearCache: function () {
+    this.getCache = new HashArray('key');
+  },
+  cleanCache: function () {
+    while (this.getCache.all.length > this.options.maxCacheSize)
+      this.getCache.remove(this.getCache.all[0]);
+  },
   addFromObject: function (obj, valueField) {
+    if (this.options.cache)
+      this.clearCache();
+
     valueField = valueField || 'value';
 
     if (this.keyFields.indexOf('_key_') == -1)
@@ -46,6 +64,9 @@ TrieSearch.prototype = {
     }
   },
   map: function (key, value) {
+    if (this.options.cache)
+      this.clearCache();
+
     var keyArr = this.keyToArr(key),
       self = this;
 
@@ -60,10 +81,10 @@ TrieSearch.prototype = {
       }
 
       var k = keyArr.shift();
-      
+
       if (!node[k])
         self.size++;
-        
+
       node[k] = node[k] || {};
 
       insert(keyArr, value, node[k])
@@ -101,6 +122,10 @@ TrieSearch.prototype = {
   _get: function (phrase) {
     phrase = this.options.ignoreCase ? phrase.toLowerCase() : phrase;
     
+    var c;
+    if (this.options.cache && (c = this.getCache.get(phrase)))
+      return c.value;
+
     var ret = undefined,
       haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields;
       words = phrase.split(/\s/g);
@@ -115,10 +140,18 @@ TrieSearch.prototype = {
       if (node = this.findNode(words[w]))
         aggregate(node, temp);
 
-      ret = ret ? ret.union(temp) : temp;
+      ret = ret ? ret.intersection(temp) : temp;
     }
     
-    return ret ? ret.all : [];
+    var v = ret ? ret.all : [];
+
+    if (this.options.cache)
+    {
+      this.getCache.add({key: phrase, value: v});
+      this.cleanCache();
+    }
+
+    return v;
     
     function aggregate(node, ha) {
       if (node.value && node.value.length)
@@ -130,7 +163,8 @@ TrieSearch.prototype = {
     }
   },
   get: function (phrases) {
-    var haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
+    var self = this,
+      haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
       ret = undefined;
 
     phrases = (phrases instanceof Array) ? phrases : [phrases];
@@ -140,7 +174,7 @@ TrieSearch.prototype = {
       var temp = this._get(phrases[i]);
       ret = ret ? ret.addAll(temp) : new HashArray(haKeyFields).addAll(temp);
     }
-
+    
     return ret.all;
   }
 };

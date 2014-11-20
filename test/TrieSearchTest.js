@@ -159,6 +159,82 @@ describe('TrieSearch', function() {
 		});
 	});
   
+	describe('TrieSearch::get(...) should work with cache==true', function() {
+    var ts = new TrieSearch('key', {min: 2}),
+      item1 = {key: 'the quick brown fox'},
+      item2 = {key: 'the quick brown'},
+      item3 = {key: 'the quick fox'},
+      item4 = {key: 'the fox'};
+
+    ts.add(item1);
+    ts.add(item2);
+    ts.add(item3);
+    ts.add(item4);
+
+		it('_get() should return identical array for the same request', function() {
+      var f1 = ts._get('the brown'),
+        f2 = ts._get('the brown');
+      
+			assert(f1 === f2, 'was not the same array.');
+		});
+    
+		it('_get() should clear cache when clearCache() is called', function() {
+      var f1 = ts._get('the brown');
+      ts.clearCache();
+      var f2 = ts._get('the brown');
+      
+			assert(f1 !== f2, 'cache was not cleared.');
+		});
+	});
+  
+	describe('TrieSearch::get(...) should work with cache==true and maxCacheSize == X', function() {
+    var ts = new TrieSearch('key', {
+        min: 2,
+        maxCacheSize: 2
+      }),
+      item1 = {key: 'the quick brown fox'},
+      item2 = {key: 'the quick brown'},
+      item3 = {key: 'the quick fox'},
+      item4 = {key: 'the fox'};
+
+    ts.add(item1);
+    ts.add(item2);
+    ts.add(item3);
+    ts.add(item4);
+
+		it('cache size should increment appropriately and cap at maxCacheSize.', function() {
+      var f1 = ts._get('the brown');
+      assert(ts.getCache.all.length == 1, 'Cache size was not size 1.');
+      ts._get('the quick');
+      assert(ts.getCache.all.length == 2, 'Cache size was not size 2 (this quick).'); // Should cap at 2.
+      ts._get('the fox');
+      assert(ts.getCache.all.length == 2, 'Cache size was not size 2 (the fox).'); // Should remain at 2.
+      var f2 = ts._get('the brown'); // This should return different array.
+      
+			assert(f1 !== f2, 'cache did not clear out old value!');
+		});
+	});
+  
+	describe('TrieSearch::get(...) should work with cache==false', function() {
+    var ts = new TrieSearch('key', {min: 2, cache: false}),
+      item1 = {key: 'the quick brown fox'},
+      item2 = {key: 'the quick brown'},
+      item3 = {key: 'the quick fox'},
+      item4 = {key: 'the fox'};
+
+    ts.add(item1);
+    ts.add(item2);
+    ts.add(item3);
+    ts.add(item4);
+
+		it('_get() should return DIFFERENT array for the same request', function() {
+      var f1 = ts._get('the brown'),
+        f2 = ts._get('the brown');
+
+			assert(f1 !== f2, 'was not the same array.');
+		});
+	});
+  
 	describe('TrieSearch::get(...) should work for multiple keys and union the result with an indexField', function() {
     var ts = new TrieSearch(['key', 'key2'], {min: 2, indexField: 'ix'}),
       item1 = {key: 'the quick brown fox', key2: 'jumped', ix: 1},
