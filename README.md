@@ -55,7 +55,7 @@ Example 1 (from Object)
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
     ts.get('andre'); // Returns only andrew.
 
-Example 2 (add items)
+Example 2 (add items individually or from Array)
 ======================
 
     var TrieSearch = require('trie-search');
