@@ -4,10 +4,13 @@ var MAX_CACHE_SIZE = 64;
 
 var TrieSearch = function (keyFields, options) {
   this.options = options || {};
+
   // Default ignoreCase to true
   this.options.ignoreCase = (this.options.ignoreCase === undefined) ? true : this.options.ignoreCase;
   this.options.maxCacheSize = this.options.maxCacheSize || MAX_CACHE_SIZE;
   this.options.cache = this.options.hasOwnProperty('cache') ? this.options.cache : true;
+  this.options.splitOnRegEx = this.options.hasOwnProperty('splitOnRegEx') ? this.options.splitOnRegEx : /\s/g;
+
   this.keyFields = keyFields ? (keyFields instanceof Array ? keyFields : [keyFields]) : [];
   this.root = {};
   this.size = 0;
@@ -30,10 +33,14 @@ TrieSearch.prototype = {
 
       val = this.options.ignoreCase ? val.toLowerCase() : val;
 
-      phrases = val.split(/\s/g);
+      if (this.options.splitOnRegEx !== undefined)
+      {
+        phrases = val.split(this.options.splitOnRegEx);
 
-      for (var i = 0, l = phrases.length; i < l; i++)
-        this.map(phrases[i], obj)
+        for (var i = 0, l = phrases.length; i < l; i++)
+          this.map(phrases[i], obj)
+      }
+      else this.map(val, obj);
     }
   },
   reset: function () {
@@ -128,7 +135,7 @@ TrieSearch.prototype = {
 
     var ret = undefined,
       haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields;
-      words = phrase.split(/\s/g);
+      words = this.options.splitOnRegEx ? phrase.split(this.options.splitOnRegEx) : [phrase];
 
     for (var w = 0, l = words.length; w < l; w++)
     {
