@@ -17,6 +17,10 @@ var TrieSearch = function (keyFields, options) {
   this.getCache = new HashArray('key');
 };
 
+function deepLookup(obj, keys) {
+  return keys.length === 1 ? obj[keys[0]] : deepLookup(obj[keys[0]], keys.slice(1, keys.length));
+}
+
 TrieSearch.prototype = {
   add: function (obj) {
     if (this.options.cache)
@@ -25,8 +29,9 @@ TrieSearch.prototype = {
     for (var k in this.keyFields)
     {
       var key = this.keyFields[k],
-        val = obj[key];
-        
+        isKeyArr = key instanceof Array,
+        val = isKeyArr ? deepLookup(obj, key) : obj[key];
+
       if (!val) continue;
       
       val = val.toString();

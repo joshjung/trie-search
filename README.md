@@ -70,13 +70,34 @@ Example 2 (add items individually or from Array)
 
     var ts = new TrieSearch('name');
 
-    objects.forEach(ts.add);
+    objects.forEach(ts.add.bind(ts));
 
     ts.get('a'); // Returns all 4 items above.
     ts.get('an'); // Returns all 4 items above.
     ts.get('and'); // Returns all 3 items above that begin with 'and'
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
     ts.get('andre'); // Returns only andrew.
+
+Example 2 (deep key lookup)
+======================
+
+    var TrieSearch = require('trie-search');
+
+    var objects = [
+      {name: 'andrew', details: {age: 21}},
+      {name: 'andy', details: {age: 37}},
+      {name: 'andrea', details: {age: 25}},
+      {name: 'annette', details: {age: 67}}
+    ];
+
+    var ts = new TrieSearch([
+      'name', // Searches `object.name`
+      ['details', 'age'] // `Search object.details.age`
+    ]);
+
+    objects.forEach(ts.add.bind(ts));
+
+    ts.get('21'); // Returns 'andrew' which has age of 21
 
 Example 3 (options.min == 3)
 ======================
@@ -92,7 +113,7 @@ Example 3 (options.min == 3)
 
     var ts = new TrieSearch('name');
 
-    objects.forEach(ts.add);
+    objects.forEach(ts.add.bind(ts));
 
     ts.get('a'); // Returns empty array, too short of search
     ts.get('an'); // Returns empty array, too short of search
@@ -117,7 +138,7 @@ As a result, in order for `get()` to be used with multiple words, it is importan
 
     var ts = new TrieSearch('name');
 
-    objects.forEach(ts.add);
+    objects.forEach(ts.add.bind(ts));
 
     ts.get('andrew');        // Returns all items
     ts.get('andrew sweden'); // Returns all items without indexField. Returns only andrew in sweden with indexField.
@@ -136,7 +157,7 @@ Example 5 (get() OR of multiple phrases)
 
     var ts = new TrieSearch(['name', 'age', 'zip']);
 
-    objects.forEach(ts.add);
+    objects.forEach(ts.add.bind(ts));
 
     ts.get('andre'); // Returns only andrew.
     ts.get(['andre', '25']); // Returns andrew AND andrea
@@ -153,7 +174,7 @@ Testing
 
       ․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․
 
-      37 passing (25ms)
+      54 passing (25ms)
 
 License
 =======

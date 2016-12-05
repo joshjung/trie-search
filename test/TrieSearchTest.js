@@ -309,6 +309,51 @@ describe('TrieSearch', function() {
       assert(ts.get('jum b c d e f g h').length == 2);
     });
   });
+
+  describe('TrieSearch::get(...) should work for a deep key combined with a non-deep key', function() {
+    var ts = new TrieSearch(['key', ['key2', 'key3']], {min: 2, indexField: 'ix'}),
+      item1 = {key: 'the quick brown fox', key2: {key3: 'jumped'}, ix: 1},
+      item2 = {key: 'the quick brown', key2: {key3: 'jumped'},ix: 2},
+      item3 = {key: 'the quick fox', key2: {key3: 'brown'}, ix: 3},
+      item4 = {key: 'the fox', key2: {key3: 'quick brown'}, ix: 4};
+
+    ts.add(item1);
+    ts.add(item2);
+    ts.add(item3);
+    ts.add(item4);
+
+    it('get(\'the quick\') should return all 4 entries', function() {
+      assert(ts.get('the quick').length == 4);
+    });
+
+    it('get(\'the brown\') should return all 4 entries', function() {
+      assert(ts.get('the brown').length == 4);
+    });
+
+    it('get(\'the fox\') should return 3 entries', function() {
+      assert(ts.get('the fox').length == 3);
+    });
+
+    it('get(\'fox brown\') should return 3 entries', function() {
+      assert(ts.get('fox brown').length == 3);
+    });
+
+    it('get(\'brown fox\') should return 3 entries', function() {
+      assert(ts.get('brown fox').length == 3);
+    });
+
+    it('get(\'brown z\') should return 4 entries', function() {
+      assert(ts.get('brown z').length == 4);
+    });
+
+    it('get(\'br f\') should return all entries', function() {
+      assert(ts.get('br f').length == 4);
+    });
+
+    it('get(\'jum b c d e f g h\') should return 2 entries, ignoring the shortness of all subsequent words', function() {
+      assert(ts.get('jum b c d e f g h').length == 2);
+    });
+  });
   
   describe('TrieSearch::add(...) and TrieSearch::get(...) should work for a single item with multiple subphrases', function() {
     var ts = new TrieSearch('key'),
