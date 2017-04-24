@@ -8,6 +8,12 @@
   "url": "https://github.com/joshjung/trie-search",
   "homepage": "https://github.com/joshjung/trie-search",
   "email": "joshua.p.jung@gmail.com",
+  "scripts": {
+    "test": "mocha",
+    "release:major": "npm version major && git push --follow-tags && npm publish",
+    "release:minor": "npm version minor && git push --follow-tags && npm publish",
+    "release:patch": "npm version patch && git push --follow-tags && npm publish"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/joshjung/trie-search.git"

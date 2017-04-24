@@ -454,4 +454,35 @@ describe('TrieSearch', function() {
       assert(ts.get('item2').length == 1, 'did not return 1 item!');
     });
   });
+
+  describe('TrieSearch::add(...) and TrieSearch::get(...) should work with customKeys', function() {
+    var ts = new TrieSearch('key', {min: 2}),
+      item1 = {customKey1: 'I am item1!', customKey2: '123'},
+      item2 = {customKey1: 'I am item2!', customKey2: '456'};
+
+    ts.add(item1, ['customKey1']);
+    ts.add(item2, ['customKey1', 'customKey2']);
+
+    it('add(item1) and add(item2) should build map of nodes', function() {
+      assert(ts.root['i'] === undefined, 'I should not exist!');
+      assert(ts.root['am'] !== undefined, 'am does not exist');
+      assert(ts.root['it']['e']['m']['1'] !== undefined, 'item1 does not exist');
+      assert(ts.root['it']['e']['m']['2'] !== undefined, 'item2 does not exist');
+      assert(ts.root['12'] === undefined, 'item1 should not exist on search for 123');
+      assert(ts.root['45']['6'] !== undefined, 'item2 does not exist on search for 456');
+    });
+
+    it('get(\'i\') should return 0 items', function() {
+      assert(ts.get('i').length == 0, 'did not return 0 items!');
+      assert(ts.get('item').length == 2, 'did not return 2 items!');
+    });
+
+    it('get(\'123\') should return 0 items', function() {
+      assert(ts.get('123').length == 0, 'did not return 0 items!');
+    });
+
+    it('get(\'45\') should return 1 items', function() {
+      assert(ts.get('456').length == 1, 'did not return 0 items!');
+    });
+  });
 });

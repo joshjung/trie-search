@@ -22,13 +22,15 @@ function deepLookup(obj, keys) {
 }
 
 TrieSearch.prototype = {
-  add: function (obj) {
+  add: function (obj, customKeys) {
     if (this.options.cache)
       this.clearCache();
-    
-    for (var k in this.keyFields)
+
+    var keyFields = customKeys || this.keyFields;
+
+    for (var k in keyFields)
     {
-      var key = this.keyFields[k],
+      var key = keyFields[k],
         isKeyArr = key instanceof Array,
         val = isKeyArr ? deepLookup(obj, key) : obj[key];
 
