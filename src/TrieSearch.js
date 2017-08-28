@@ -10,11 +10,15 @@ var TrieSearch = function (keyFields, options) {
   this.options.maxCacheSize = this.options.maxCacheSize || MAX_CACHE_SIZE;
   this.options.cache = this.options.hasOwnProperty('cache') ? this.options.cache : true;
   this.options.splitOnRegEx = this.options.hasOwnProperty('splitOnRegEx') ? this.options.splitOnRegEx : /\s/g;
+  this.options.min = this.options.min || 1;
 
   this.keyFields = keyFields ? (keyFields instanceof Array ? keyFields : [keyFields]) : [];
   this.root = {};
   this.size = 0;
-  this.getCache = new HashArray('key');
+
+  if (this.options.cache) {
+    this.getCache = new HashArray('key');
+  }
 };
 
 function deepLookup(obj, keys) {
@@ -25,6 +29,11 @@ TrieSearch.prototype = {
   add: function (obj, customKeys) {
     if (this.options.cache)
       this.clearCache();
+
+    // Someone might have called add via an array forEach where the second param is a number
+    if (typeof customKeys === 'number') {
+      customKeys = undefined;
+    }
 
     var keyFields = customKeys || this.keyFields;
 
@@ -50,11 +59,18 @@ TrieSearch.prototype = {
       else this.map(val, obj);
     }
   },
+  addAll: function (arr, customKeys) {
+    for (var i = 0; i < arr.length; i++)
+      this.add(arr[i], customKeys);
+  },
   reset: function () {
     this.root = {};
     this.size = 0;
   },
   clearCache: function () {
+    // if (this.getCache && !this.getCache._list.length) {
+    //   return;
+    // }
     this.getCache = new HashArray('key');
   },
   cleanCache: function () {

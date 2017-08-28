@@ -61,7 +61,7 @@ Example 2 (add items individually or from Array)
 
     var TrieSearch = require('trie-search');
 
-    var objects = [
+    var arr = [
       {name: 'andrew', age: 21},
       {name: 'andy', age: 37},
       {name: 'andrea', age: 25},
@@ -70,7 +70,7 @@ Example 2 (add items individually or from Array)
 
     var ts = new TrieSearch('name');
 
-    objects.forEach(ts.add.bind(ts));
+    ts.addAll(arr);
 
     ts.get('a'); // Returns all 4 items above.
     ts.get('an'); // Returns all 4 items above.
@@ -83,7 +83,7 @@ Example 2 (deep key lookup)
 
     var TrieSearch = require('trie-search');
 
-    var objects = [
+    var arr = [
       {name: 'andrew', details: {age: 21}},
       {name: 'andy', details: {age: 37}},
       {name: 'andrea', details: {age: 25}},
@@ -95,7 +95,7 @@ Example 2 (deep key lookup)
       ['details', 'age'] // `Search object.details.age`
     ]);
 
-    objects.forEach(ts.add.bind(ts));
+    ts.addAll(arr);
 
     ts.get('21'); // Returns 'andrew' which has age of 21
 
@@ -104,7 +104,7 @@ Example 3 (options.min == 3)
 
     var TrieSearch = require('trie-search', {min: 3});
 
-    var objects = [
+    var arr = [
       {name: 'andrew', age: 21},
       {name: 'andy', age: 37},
       {name: 'andrea', age: 25},
@@ -113,7 +113,7 @@ Example 3 (options.min == 3)
 
     var ts = new TrieSearch('name');
 
-    objects.forEach(ts.add.bind(ts));
+    ts.addAll(arr);
 
     ts.get('a'); // Returns empty array, too short of search
     ts.get('an'); // Returns empty array, too short of search
@@ -130,7 +130,7 @@ As a result, in order for `get()` to be used with multiple words, it is importan
 
     var TrieSearch = require('trie-search', {min: 3, indexField: 'ix'});
 
-    var objects = [
+    var arr = [
       {ix: 1, name: 'andrew', location: 'sweden', age: 21},
       {ix: 2, name: 'andrew', location: 'brussels', age: 37},
       {ix: 3, name: 'andrew', location: 'johnsonville', age: 25}
@@ -138,7 +138,7 @@ As a result, in order for `get()` to be used with multiple words, it is importan
 
     var ts = new TrieSearch('name');
 
-    objects.forEach(ts.add.bind(ts));
+    ts.addAll(arr);
 
     ts.get('andrew');        // Returns all items
     ts.get('andrew sweden'); // Returns all items without indexField. Returns only andrew in sweden with indexField.
@@ -148,7 +148,7 @@ Example 5 (get() OR of multiple phrases)
 
     var TrieSearch = require('trie-search');
 
-    var objects = [
+    var arr = [
       {name: 'andrew', age: 21, zip: 60600},
       {name: 'andy', age: 37, zip: 60601},
       {name: 'andrea', age: 25, zip: 60602},
@@ -157,7 +157,7 @@ Example 5 (get() OR of multiple phrases)
 
     var ts = new TrieSearch(['name', 'age', 'zip']);
 
-    objects.forEach(ts.add.bind(ts));
+    ts.addAll(arr);
 
     ts.get('andre'); // Returns only andrew.
     ts.get(['andre', '25']); // Returns andrew AND andrea
@@ -174,7 +174,7 @@ Testing
 
       ․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․
 
-      54 passing (25ms)
+      59 passing (25ms)
 
 License
 =======

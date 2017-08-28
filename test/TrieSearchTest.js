@@ -70,6 +70,31 @@ describe('TrieSearch', function() {
       assert.equal(ts.get('nope').length, 0);
     });
   });
+
+  describe('TrieSearch::addAll(...)should work for an array', function() {
+    var ts = new TrieSearch('key'),
+      items = [{key: 'addendum'}, {key: 'banana'}, {key: 'cat'}];
+
+    ts.addAll(items);
+
+    it('get(\'blah\') for each subkey should work', function() {
+      assert.equal(ts.get('b')[0], items[1]);
+      assert.equal(ts.get('ba')[0], items[1]);
+      assert.equal(ts.get('ban')[0], items[1]);
+      assert.equal(ts.get('bana')[0], items[1]);
+      assert.equal(ts.get('banana')[0], items[1]);
+
+      assert.equal(ts.get('a')[0], items[0]);
+      assert.equal(ts.get('ad')[0], items[0]);
+      assert.equal(ts.get('add')[0], items[0]);
+      assert.equal(ts.get('adde')[0], items[0]);
+      assert.equal(ts.get('addendum')[0], items[0]);
+
+      assert.equal(ts.get('c')[0], items[2]);
+      assert.equal(ts.get('ca')[0], items[2]);
+      assert.equal(ts.get('cat')[0], items[2]);
+    });
+  });
   
   describe('TrieSearch::add(...) and TrieSearch::get(...) should work for a single item with a numeric key', function() {
     var ts = new TrieSearch('key'),
