@@ -102,7 +102,7 @@ Example 2 (deep key lookup)
 Example 3 (options.min == 3)
 ======================
 
-    var TrieSearch = require('trie-search', {min: 3});
+    var TrieSearch = require('trie-search');
 
     var arr = [
       {name: 'andrew', age: 21},
@@ -111,7 +111,7 @@ Example 3 (options.min == 3)
       {name: 'annette', age: 67}
     ];
 
-    var ts = new TrieSearch('name');
+    var ts = new TrieSearch('name', {min: 3});
 
     ts.addAll(arr);
 
@@ -128,7 +128,7 @@ By default, the HashArray object (which TrieSearch uses) does not - for the sake
 
 As a result, in order for `get()` to be used with multiple words, it is important that a field is used to identify each record in the TrieSearch, similar to a index in a database.
 
-    var TrieSearch = require('trie-search', {min: 3, indexField: 'ix'});
+    var TrieSearch = require('trie-search');
 
     var arr = [
       {ix: 1, name: 'andrew', location: 'sweden', age: 21},
@@ -136,7 +136,7 @@ As a result, in order for `get()` to be used with multiple words, it is importan
       {ix: 3, name: 'andrew', location: 'johnsonville', age: 25}
     ];
 
-    var ts = new TrieSearch('name');
+    var ts = new TrieSearch('name', {min: 3, indexField: 'ix'});
 
     ts.addAll(arr);
 
