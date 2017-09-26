@@ -49,14 +49,7 @@ TrieSearch.prototype = {
 
       val = this.options.ignoreCase ? val.toLowerCase() : val;
 
-      if (this.options.splitOnRegEx !== undefined)
-      {
-        phrases = val.split(this.options.splitOnRegEx);
-
-        for (var i = 0, l = phrases.length; i < l; i++)
-          this.map(phrases[i], obj)
-      }
-      else this.map(val, obj);
+      this.map(val, obj);
     }
   },
   addAll: function (arr, customKeys) {
@@ -94,6 +87,16 @@ TrieSearch.prototype = {
     }
   },
   map: function (key, value) {
+    if (this.options.splitOnRegEx && this.options.splitOnRegEx.test(key))
+    {
+      var phrases = key.split(this.options.splitOnRegEx);
+
+      for (var i = 0, l = phrases.length; i < l; i++)
+        this.map(phrases[i], value);
+
+      return;
+    }
+
     if (this.options.cache)
       this.clearCache();
 
