@@ -100,6 +100,10 @@ TrieSearch.prototype = {
     this.indexed = this.indexed || [];
     this.indexed.push(value);
 
+    if (this.options.ignoreCase) {
+      key = key.toLowerCase();
+    }
+
     var keyArr = this.keyToArr(key),
       self = this;
 
