@@ -97,6 +97,9 @@ TrieSearch.prototype = {
     if (this.options.cache)
       this.clearCache();
 
+    this.indexed = this.indexed || [];
+    this.indexed.push(value);
+
     var keyArr = this.keyToArr(key),
       self = this;
 
