@@ -11,6 +11,8 @@ var TrieSearch = function (keyFields, options) {
   this.options.cache = this.options.hasOwnProperty('cache') ? this.options.cache : true;
   this.options.splitOnRegEx = this.options.hasOwnProperty('splitOnRegEx') ? this.options.splitOnRegEx : /\s/g;
   this.options.min = this.options.min || 1;
+  this.options.keepAll = this.options.hasOwnProperty('keepAll') ? this.options.keepAll : false;
+  this.options.keepAllKey = this.options.hasOwnProperty('keepAllKey') ? this.options.keepAllKey : 'id';
 
   this.keyFields = keyFields ? (keyFields instanceof Array ? keyFields : [keyFields]) : [];
   this.root = {};
@@ -100,8 +102,10 @@ TrieSearch.prototype = {
     if (this.options.cache)
       this.clearCache();
 
-    this.indexed = this.indexed || [];
-    this.indexed.push(value);
+    if (this.options.keepAll) {
+      this.indexed = this.indexed || new HashArray([this.options.keepAllKey]);
+      this.indexed.add(value);
+    }
 
     if (this.options.ignoreCase) {
       key = key.toLowerCase();
