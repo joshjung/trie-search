@@ -171,7 +171,7 @@ TrieSearch.prototype = {
       return c.value;
 
     var ret = undefined,
-      haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields;
+      haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
       words = this.options.splitOnRegEx ? phrase.split(this.options.splitOnRegEx) : [phrase];
 
     for (var w = 0, l = words.length; w < l; w++)
