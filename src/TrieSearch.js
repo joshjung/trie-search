@@ -13,6 +13,7 @@ var TrieSearch = function (keyFields, options) {
   this.options.min = this.options.min || 1;
   this.options.keepAll = this.options.hasOwnProperty('keepAll') ? this.options.keepAll : false;
   this.options.keepAllKey = this.options.hasOwnProperty('keepAllKey') ? this.options.keepAllKey : 'id';
+  this.options.idFieldOrFunction = this.options.hasOwnProperty('idFieldOrFunction') ? this.options.idFieldOrFunction : undefined;
 
   this.keyFields = keyFields ? (keyFields instanceof Array ? keyFields : [keyFields]) : [];
   this.root = {};
@@ -206,21 +207,74 @@ TrieSearch.prototype = {
           aggregate(node[k], ha);
     }
   },
-  get: function (phrases) {
+  get: function (phrases, reducer) {
     var self = this,
       haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
-      ret = undefined;
+      ret = undefined,
+      accumulator = undefined;
+
+    if (reducer && !this.options.idFieldOrFunction) {
+      throw new Error('To use the accumulator, you must specify and idFieldOrFunction');
+    }
 
     phrases = (phrases instanceof Array) ? phrases : [phrases];
 
     for (var i = 0, l = phrases.length; i < l; i++)
     {
-      var temp = this._get(phrases[i]);
-      ret = ret ? ret.addAll(temp) : new HashArray(haKeyFields).addAll(temp);
+      var matches = this._get(phrases[i]);
+
+      if (reducer) {
+        accumulator = reducer(accumulator, phrases[i], matches, this);
+      } else {
+        ret = ret ? ret.addAll(matches) : new HashArray(haKeyFields).addAll(matches);
+      }
     }
-    
-    return ret.all;
+
+    if (!reducer) {
+      return ret.all;
+    }
+
+    return accumulator;
+  },
+  getId: function (item) {
+    return typeof this.options.idFieldOrFunction === 'function' ? this.options.idFieldOrFunction(item) : item[this.options.idFieldOrFunction];
   }
+};
+
+TrieSearch.UNION_REDUCER = function(accumulator, phrase, matches, trie) {
+  if (accumulator === undefined) {
+    return matches;
+  }
+
+  var map = {}, i, id;
+  var maxLength = Math.max(accumulator.length, matches.length);
+  var results = [];
+  var l = 0;
+
+  // One loop, O(N) for max length of accumulator or matches.
+  for (i = 0; i < maxLength; i++) {
+    if (i < accumulator.length) {
+      id = trie.getId(accumulator[i]);
+      map[id] = map[id] ? map[id] : 0;
+      map[id]++;
+
+      if (map[id] === 2) {
+        results[l++] = accumulator[i];
+      }
+    }
+
+    if (i < matches.length) {
+      id = trie.getId(matches[i]);
+      map[id] = map[id] ? map[id] : 0;
+      map[id]++;
+
+      if (map[id] === 2) {
+        results[l++] = matches[i];
+      }
+    }
+  }
+
+  return results;
 };
 
 module.exports = TrieSearch;

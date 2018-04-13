@@ -78,7 +78,7 @@ Example 2 (add items individually or from Array)
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
     ts.get('andre'); // Returns only andrew.
 
-Example 2 (deep key lookup)
+Example 3 (deep key lookup)
 ======================
 
     var TrieSearch = require('trie-search');
@@ -99,7 +99,7 @@ Example 2 (deep key lookup)
 
     ts.get('21'); // Returns 'andrew' which has age of 21
 
-Example 3 (options.min == 3)
+Example 4 (options.min == 3)
 ======================
 
     var TrieSearch = require('trie-search');
@@ -121,7 +121,7 @@ Example 3 (options.min == 3)
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
     ts.get('andre'); // Returns only andrew.
     
-Example 4 (options.indexField = 'ix')
+Example 5 (options.indexField = 'ix')
 ======================
 
 By default, the HashArray object (which TrieSearch uses) does not - for the sake of speed - verify object uniqueness by the object itself, but instead by a field on that object.
@@ -143,7 +143,7 @@ As a result, in order for `get()` to be used with multiple words, it is importan
     ts.get('andrew');        // Returns all items
     ts.get('andrew sweden'); // Returns all items without indexField. Returns only andrew in sweden with indexField.
 
-Example 5 (get() OR of multiple phrases)
+Example 6 (get() OR of multiple phrases)
 ======================
 
     var TrieSearch = require('trie-search');
@@ -165,8 +165,32 @@ Example 5 (get() OR of multiple phrases)
     ts.get(['21', '67']); // Returns andrew AND joseph
     ts.get(['21', '60603']); // Returns andrew AND joseph
 
+Example 7 (get() AND multiple phrases custom reducer / accumulator)
+======================
+
+    var TrieSearch = require('trie-search');
+    
+    var arr = [
+      {name: 'andrew', age: 21, zip: 60600, id: 1}, // person1
+      {name: 'andrew', age: 37, zip: 60601, id: 2}, // person2
+      {name: 'andrew', age: 25, zip: 60602, id: 3}, // person3
+      {name: 'andrew', age: 37, zip: 60603, id: 4}  // person4
+    ];
+
+    var ts = new TrieSearch(['name', 'age', 'zip'], {
+      idFieldOrFunction: 'id' // Required to uniquely identify during union (AND)
+    });
+
+    ts.addAll(arr);
+
+    ts.get(['andrew', '25'], TrieSearch.UNION_REDUCER); // [person3]
+    ts.get(['andrew', '50'], TrieSearch.UNION_REDUCER); // []
+    ts.get(['andrew', '37'], TrieSearch.UNION_REDUCER); // [person2, person4]
+
 Testing
 =======
+
+    npm i -g mocha
 
     >mocha
 
@@ -174,7 +198,7 @@ Testing
 
       ․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․
 
-      59 passing (25ms)
+      67 passing (25ms)
 
 License
 =======

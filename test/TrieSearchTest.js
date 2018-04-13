@@ -510,4 +510,90 @@ describe('TrieSearch', function() {
       assert(ts.get('456').length == 1, 'did not return 0 items!');
     });
   });
+
+  describe('TrieSearch::get(...) should work with a custom reducer and accumulator', function() {
+    var ts = new TrieSearch('key', {
+        min: 2,
+        idFieldOrFunction: 'key'
+    }),
+      item1 = {key: 'I am red robin!'},
+      item2 = {key: 'I am red cockatiel!'},
+      item3 = {key: 'I am green cardinal!'},
+      item4 = {key: 'I am green owl!'},
+      item5 = {key: 'robin cockatiel cardinal owl!'};
+
+    ts.add(item1);
+    ts.add(item2);
+    ts.add(item3);
+    ts.add(item4);
+    ts.add(item5);
+
+    it('get(\'robin\', [reducer])', function() {
+      let result = ts.get('robin', function(_accumulator, phrase, phraseMatches, trie) {
+        assert(_accumulator === undefined, 'accumulator should be undefined on first pass for first phrase');
+        assert(phrase === 'robin', 'phrase was incorrect');
+        assert(phraseMatches.length === 2, 'phraseMatches length is incorrect');
+        assert(phraseMatches[0] === item5, 'wrong phraseMatches returned');
+        assert(phraseMatches[1] === item1, 'wrong phraseMatches returned');
+        assert(trie === ts, 'Trie did not equal ts');
+
+        _accumulator = _accumulator || [];
+        _accumulator.push(phraseMatches[1]);
+        _accumulator.push(phraseMatches[0]);
+
+        return _accumulator;
+      });
+
+      assert(result.length === 2, 'result has incorrect length: ' + result.length);
+      assert(result[0] === item1, 'result has incorrect items');
+      assert(result[1] === item5, 'result has incorrect items');
+    });
+
+    it('get([\'red\', \'robin\'], TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get(['red', 'robin'], TrieSearch.UNION_REDUCER);
+
+      assert(result.length, 'result has incorrect length: ' + result.length);
+      assert(result[0] === item1, 'result has incorrect items');
+    });
+
+    it('get([\'green\'], TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get(['green'], TrieSearch.UNION_REDUCER);
+
+      assert(result.length === 2, 'result has incorrect length');
+      assert(result[0] === item3, 'result has incorrect items');
+      assert(result[1] === item4, 'result has incorrect items');
+    });
+
+    it('get(\'green\', TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get('green', TrieSearch.UNION_REDUCER);
+
+      assert(result.length === 2, 'result has incorrect length');
+      assert(result[0] === item3, 'result has incorrect items');
+      assert(result[1] === item4, 'result has incorrect items');
+    });
+
+    it('get(\'blue\', TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get('blue', TrieSearch.UNION_REDUCER);
+
+      assert(result.length === 0, 'result has incorrect length');
+    });
+
+    it('get(\'am\', TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get('am', TrieSearch.UNION_REDUCER);
+
+      assert(result.length === 4, 'result has incorrect length');
+    });
+
+    it('get([\'owl\', \'card\', \'cock\', \'rob\'], TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get(['owl', 'card', 'cock', 'rob'], TrieSearch.UNION_REDUCER);
+
+      assert(result.length === 1, 'result has incorrect length: ' + result.length);
+    });
+
+    it('get([\'owl\', \'card\', \'cock\', \'rob\', \'fubar\'], TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get(['owl', 'card', 'cock', 'rob', 'fubar'], TrieSearch.UNION_REDUCER);
+
+      assert(result.length === 0, 'result has incorrect length: ' + result.length);
+    });
+  });
 });
