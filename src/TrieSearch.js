@@ -2,6 +2,37 @@ var HashArray = require('hasharray');
 
 var MAX_CACHE_SIZE = 64;
 
+var DEFAULT_INTERNATIONALIZE_EXPAND_REGEXES = [
+  {
+    regex: /[åäàáâãæ]/uig,
+    alternate: 'a'
+  },
+  {
+    regex: /[èéêë]/uig,
+    alternate: 'e'
+  },
+  {
+    regex: /[ìíîï]/uig,
+    alternate: 'i'
+  },
+  {
+    regex: /[òóôõö]/uig,
+    alternate: 'o'
+  },
+  {
+    regex: /[ùúûü]/uig,
+    alternate: 'u'
+  },
+  {
+    regex: /[æ]/uig,
+    alternate: 'ae'
+  }
+];
+
+String.prototype.replaceCharAt=function(index, replacement) {
+  return this.substr(0, index) + replacement + this.substr(index + replacement.length);
+};
+
 var TrieSearch = function (keyFields, options) {
   this.options = options || {};
 
@@ -14,6 +45,7 @@ var TrieSearch = function (keyFields, options) {
   this.options.keepAll = this.options.hasOwnProperty('keepAll') ? this.options.keepAll : false;
   this.options.keepAllKey = this.options.hasOwnProperty('keepAllKey') ? this.options.keepAllKey : 'id';
   this.options.idFieldOrFunction = this.options.hasOwnProperty('idFieldOrFunction') ? this.options.idFieldOrFunction : undefined;
+  this.options.expandRegexes = this.options.expandRegexes || DEFAULT_INTERNATIONALIZE_EXPAND_REGEXES;
 
   this.keyFields = keyFields ? (keyFields instanceof Array ? keyFields : [keyFields]) : [];
   this.root = {};
@@ -47,13 +79,49 @@ TrieSearch.prototype = {
         val = isKeyArr ? deepLookup(obj, key) : obj[key];
 
       if (!val) continue;
-      
-      val = val.toString();
 
+      val = val.toString();
       val = this.options.ignoreCase ? val.toLowerCase() : val;
 
-      this.map(val, obj);
+      let expandedValues = this.expandString(val);
+
+      for (let v = 0; v < expandedValues.length; v++) {
+        expandedValue = expandedValues[v];
+
+        this.map(expandedValue, obj);
+      }
     }
+  },
+  /**
+   * By default using the options.expandRegexes, given a string like 'ö är bra', this will expand it to:
+   *
+   * ['ö är bra', 'o är bra', 'ö ar bra', 'o ar bra']
+   *
+   * By default this was built to allow for internationalization, but it could be also be expanded to
+   * allow for word alternates, etc. like spelling alternates ('teh' and 'the').
+   *
+   * This is used for insertion! This should not be used for lookup since if a person explicitly types
+   * 'ä' they probably do not want to see all results for 'a'.
+   *
+   * @param value The string to find alternates for.
+   * @returns {Array} Always returns an array even if no matches.
+   */
+  expandString: function(value) {
+    var values = [value];
+
+    if (this.options.expandRegexes && this.options.expandRegexes.length) {
+      for (let i = 0; i < this.options.expandRegexes.length; i++) {
+        var er = this.options.expandRegexes[i];
+        let match;
+
+        while((match = er.regex.exec(value)) !== null) {
+          let alternateValue = value.replaceCharAt(match.index, er.alternate);
+          values.push(alternateValue);
+        }
+      }
+    }
+
+    return values;
   },
   addAll: function (arr, customKeys) {
     for (var i = 0; i < arr.length; i++)

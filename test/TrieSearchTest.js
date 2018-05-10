@@ -596,4 +596,85 @@ describe('TrieSearch', function() {
       assert(result.length === 0, 'result has incorrect length: ' + result.length);
     });
   });
+
+  describe('TrieSearch::get(...) with internationalization turned on (default) should work', function() {
+    let as = 'åäàáâã'.split('');
+    let es = 'èéêë'.split('');
+    let is = 'ìíîï'.split('');
+    let os = 'òóôõö'.split('');
+    let us = 'ùúûü'.split('');
+    let aes = 'æ'.split('');
+
+    let ts = new TrieSearch('key'),
+        As_items =  as.map(letter => ({key: letter, arr: as})),
+        Es_items =  es.map(letter => ({key: letter, arr: es})),
+        Is_items =  is.map(letter => ({key: letter, arr: is})),
+        Os_items =  os.map(letter => ({key: letter, arr: os})),
+        Us_items =  us.map(letter => ({key: letter, arr: us})),
+        AEs_items = aes.map(letter => ({key: letter, arr: aes}));
+
+    ts.addAll(As_items);
+    ts.addAll(Es_items);
+    ts.addAll(Is_items);
+    ts.addAll(Os_items);
+    ts.addAll(Us_items);
+    ts.addAll(AEs_items);
+
+    it(`Should return international items for "a" -> any of "${as}"`, function() {
+      let items = ts.get('a');
+
+      // Note this will include overlap with the ae!
+      assert(items.length === 7);
+
+      items.forEach(i => {
+        assert(i.arr === as || i.arr === aes);
+      });
+    });
+
+    it(`Should return international items for "e" -> any of "${es}"`, function() {
+      let items = ts.get('e');
+      assert(items.length === 4);
+
+      items.forEach(i => {
+        assert(i.arr === es);
+      });
+    });
+
+    it(`Should return international items for "i" -> any of "${is}"`, function() {
+      let items = ts.get('i');
+      assert(items.length === 4);
+
+      items.forEach(i => {
+        assert(i.arr === is);
+      });
+    });
+
+    it(`Should return international items for "o" -> any of "${os}"`, function() {
+      let items = ts.get('o');
+      assert(items.length === 5);
+
+      items.forEach(i => {
+        assert(i.arr === os);
+      });
+    });
+
+    it(`Should return international items for "u" -> any of "${us}"`, function() {
+      let items = ts.get('u');
+      assert(items.length === 4);
+
+      items.forEach(i => {
+        assert(i.arr === us);
+      });
+    });
+
+    it(`Should return international items for Swedish as an example with ''godis på sötdag är bra''`, function() {
+      let swedishSentence = {key: 'godis på sötdag är bra'};
+
+      ts.add(swedishSentence);
+
+      assert(ts.get('pa').length === 1);
+      assert(ts.get('sot').length === 1);
+      assert(ts.get('ar').length === 1);
+    });
+  });
 });
