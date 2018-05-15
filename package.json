@@ -3,7 +3,7 @@
   "author": "Joshua Jung <joshua.p.jung@gmail.com>",
   "license": "MIT",
   "description": "A trie implementation that maps keys to objects for rapid retrieval by phrases. Most common use will be for typeahead searches.",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "index.js",
   "url": "https://github.com/joshjung/trie-search",
   "homepage": "https://github.com/joshjung/trie-search",
