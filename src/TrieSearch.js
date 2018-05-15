@@ -85,7 +85,7 @@ TrieSearch.prototype = {
 
       var expandedValues = this.expandString(val);
 
-      for (let v = 0; v < expandedValues.length; v++) {
+      for (var v = 0; v < expandedValues.length; v++) {
         var expandedValue = expandedValues[v];
 
         this.map(expandedValue, obj);
@@ -110,12 +110,12 @@ TrieSearch.prototype = {
     var values = [value];
 
     if (this.options.expandRegexes && this.options.expandRegexes.length) {
-      for (let i = 0; i < this.options.expandRegexes.length; i++) {
+      for (var i = 0; i < this.options.expandRegexes.length; i++) {
         var er = this.options.expandRegexes[i];
-        let match;
+        var match;
 
         while((match = er.regex.exec(value)) !== null) {
-          let alternateValue = value.replaceCharAt(match.index, er.alternate);
+          var alternateValue = value.replaceCharAt(match.index, er.alternate);
           values.push(alternateValue);
         }
       }
