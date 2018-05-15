@@ -83,10 +83,10 @@ TrieSearch.prototype = {
       val = val.toString();
       val = this.options.ignoreCase ? val.toLowerCase() : val;
 
-      let expandedValues = this.expandString(val);
+      var expandedValues = this.expandString(val);
 
       for (let v = 0; v < expandedValues.length; v++) {
-        expandedValue = expandedValues[v];
+        var expandedValue = expandedValues[v];
 
         this.map(expandedValue, obj);
       }
