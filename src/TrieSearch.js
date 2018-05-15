@@ -4,27 +4,27 @@ var MAX_CACHE_SIZE = 64;
 
 var DEFAULT_INTERNATIONALIZE_EXPAND_REGEXES = [
   {
-    regex: /[åäàáâãæ]/uig,
+    regex: /[åäàáâãæ]/ig,
     alternate: 'a'
   },
   {
-    regex: /[èéêë]/uig,
+    regex: /[èéêë]/ig,
     alternate: 'e'
   },
   {
-    regex: /[ìíîï]/uig,
+    regex: /[ìíîï]/ig,
     alternate: 'i'
   },
   {
-    regex: /[òóôõö]/uig,
+    regex: /[òóôõö]/ig,
     alternate: 'o'
   },
   {
-    regex: /[ùúûü]/uig,
+    regex: /[ùúûü]/ig,
     alternate: 'u'
   },
   {
-    regex: /[æ]/uig,
+    regex: /[æ]/ig,
     alternate: 'ae'
   }
 ];
