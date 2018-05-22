@@ -428,13 +428,12 @@ describe('TrieSearch', function() {
   });
   describe('TrieSearch::add(...) should reduce for multiple items on add', function() {
     var customReducer = function (newNodeValues) {
-      var oldNodeValue = newNodeValues[0]
+      var oldNodeValue = newNodeValues[0] // get first value for accumulator
       return newNodeValues.reduce(function (agg, value, i) {
-        console.log(agg, value, i)
-        if (!i) return agg
-        agg[0].count += value.count
-        return agg
-      }, [oldNodeValue])
+        if (!i) return agg // keep current value
+        agg[0].count += value.count // aggregate count
+        return agg // return value array of one item
+      }, [oldNodeValue]) // start with an array aggregator for reducer
     }
     var ts = new TrieSearch('geohash', {
       customReducer: customReducer
