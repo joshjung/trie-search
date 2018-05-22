@@ -190,6 +190,7 @@ TrieSearch.prototype = {
       {
         node['value'] = node['value'] || [];
         node['value'].push(value);
+        node['value'] = this.customReducer(node['value'])
         return; 
       }
 
