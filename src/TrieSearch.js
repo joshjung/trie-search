@@ -46,7 +46,7 @@ var TrieSearch = function (keyFields, options) {
   this.options.keepAllKey = this.options.hasOwnProperty('keepAllKey') ? this.options.keepAllKey : 'id';
   this.options.idFieldOrFunction = this.options.hasOwnProperty('idFieldOrFunction') ? this.options.idFieldOrFunction : undefined;
   this.options.expandRegexes = this.options.expandRegexes || DEFAULT_INTERNATIONALIZE_EXPAND_REGEXES;
-  this.customReducer = this.options.customReducer || function (nodeValue) { return  nodeValue }; // return node value
+  this.customReducer = this.options.customReducer || null; // return node value
   this.keyFields = keyFields ? (keyFields instanceof Array ? keyFields : [keyFields]) : [];
   this.root = {};
   this.size = 0;
@@ -189,9 +189,24 @@ TrieSearch.prototype = {
       if (keyArr.length == 0)
       {
         node['value'] = node['value'] || [];
-        node['value'].push(value);
-        node['value'] = this.customReducer(node['value'])
-        return; 
+        // if only one element, return without reducer
+        if (!node['value'].length) {
+          node['value'].push(value);
+          return;
+        }
+        if (!self.customReducer) 
+        {
+          node['value'].push(value);
+          return;
+        } 
+        else 
+        {
+          // if reducer
+          var oldValue = node['value'].slice(0);
+          node['value'].push(value);
+          node['value'] = self.customReducer(node['value'], oldValue);
+          return;
+        }
       }
 
       var k = keyArr.shift();

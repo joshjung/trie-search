@@ -1,6 +1,9 @@
 var assert = require('assert'),
   TrieSearch = require('../src/TrieSearch');
-
+function generateGeohashTree () {
+  var geohashTree = JSON.stringify(require('./fixtures/geohashTree.json'))
+  return JSON.parse(geohashTree)
+}
 describe('TrieSearch', function() {
   describe('new TrieSearch(keyFields) should work', function() {
     it('should set keyfields (1)', function() {
@@ -423,7 +426,26 @@ describe('TrieSearch', function() {
       assert.equal(ts.get('man')[0], item);
     });
   });
-  
+  describe('TrieSearch::add(...) should reduce for multiple items on add', function() {
+    var customReducer = function (newNodeValues) {
+      var oldNodeValue = newNodeValues[0]
+      return newNodeValues.reduce(function (agg, value, i) {
+        console.log(agg, value, i)
+        if (!i) return agg
+        agg[0].count += value.count
+        return agg
+      }, [oldNodeValue])
+    }
+    var ts = new TrieSearch('geohash', {
+      customReducer: customReducer
+    });
+    var geohashTree = generateGeohashTree();
+    ts.addAll(geohashTree['cbh3']);
+    var results = ts.get('cbh3tfq8n')
+    console.log(results)
+    assert.equal(results.length, 1)
+    assert.equal(results[0].count, 58)
+  });
   describe('TrieSearch::add(...) and TrieSearch::get(...) should work for multiple items', function() {
     var ts = new TrieSearch('key'),
       item1 = {key: 'I am item1!'},
