@@ -201,6 +201,34 @@ Example 7 (get() AND multiple phrases custom reducer / accumulator)
     ts.get(['andrew', '50'], TrieSearch.UNION_REDUCER); // []
     ts.get(['andrew', '37'], TrieSearch.UNION_REDUCER); // [person2, person4]
 
+Example 8 (add() with customReducer for aggregating node values)
+=======
+
+    var TrieSearch = require('trie-search');  
+
+    var arr = [
+      { "geohash": "cbh3tfq8n", "count": 2 },
+      { "geohash": "cbh3tfq8n", "count": 2 },
+      { "geohash": "cbh3tfq8n", "count": 2 }
+    ];
+
+    var customReducer = function (newNodeValues) {
+      var oldNodeValue = newNodeValues[0] // get first value for accumulator
+      return newNodeValues.reduce(function (agg, value, i) {
+        if (!i) return agg // keep current value
+        agg[0].count += value.count // aggregate count
+        return agg // return value array of one item
+      }, [oldNodeValue]) // start with an array aggregator for reducer
+    }
+
+    var ts = new TrieSearch('geohash', {
+      customReducer: customReducer
+    });
+
+    ts.addAll(arr);
+
+    ts.get('cbh3tfq8n') // [{ "geohash": "cbh3tfq8n", count: 6 }]
+
 Testing
 =======
 
