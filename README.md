@@ -68,7 +68,8 @@ Example 1 (from Object)
     ts.get('an'); // Returns all 4 items above.
     ts.get('and'); // Returns all 3 items above that begin with 'and'
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andre'); // Returns only andrew.
+    ts.get('andre'); // Returns all 2 items above that begin with 'andr'
+    ts.get('andrew'); // Returns only andrew.
 
 Example 2 (add items individually or from Array)
 ======================
@@ -90,7 +91,8 @@ Example 2 (add items individually or from Array)
     ts.get('an'); // Returns all 4 items above.
     ts.get('and'); // Returns all 3 items above that begin with 'and'
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andre'); // Returns only andrew.
+    ts.get('andre'); // Returns all 2 items above that begin with 'andr'
+    ts.get('andrew'); // Returns only andrew.
 
 Example 3 (deep key lookup)
 ======================
@@ -133,7 +135,8 @@ Example 4 (options.min == 3)
     ts.get('an'); // Returns empty array, too short of search
     ts.get('and'); // Returns all 3 items above that begin with 'and'
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andre'); // Returns only andrew.
+    ts.get('andre'); // Returns all 2 items above that begin with 'andr'
+    ts.get('andrew'); // Returns only andrew.
     
 Example 5 (options.indexField = 'ix')
 ======================
@@ -173,7 +176,7 @@ Example 6 (get() OR of multiple phrases)
 
     ts.addAll(arr);
 
-    ts.get('andre'); // Returns only andrew.
+    ts.get('andre'); // Returns andrew AND andrea.
     ts.get(['andre', '25']); // Returns andrew AND andrea
     ts.get(['andre', 'jos']); // Returns andrew AND joseph
     ts.get(['21', '67']); // Returns andrew AND joseph
