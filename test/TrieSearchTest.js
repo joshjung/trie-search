@@ -722,5 +722,19 @@ describe('TrieSearch', function() {
       assert(ts.get('Color')[0] === item2, 'Did not properly match Color');
       assert(ts.get('WhatIsYourFavoriteColor')[0] === item2, 'Did not properly match full phrase WhatIsYourFavoriteColor');
     });
+
+    it('should match capital letter breaks', function() {
+      var ts = new TrieSearch('someValue', {
+          splitOnRegEx: /([.\-\s'_]|(?=[A-Z]))/,
+          splitOnGetRegEx: /[\s]/
+        }),
+        item = {someValue: 12345},
+        item2 = {someValue: 67890};
+
+      ts.map('WhatIsYourFavoriteColor', item2);
+
+      assert(ts.get('What Is')[0] === item2, 'Did not properly match What');
+      assert(ts.get('Color Favorite')[0] === item2, 'Did not properly match Is');
+    });
   });
 });
