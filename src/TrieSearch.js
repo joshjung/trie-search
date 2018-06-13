@@ -2,6 +2,8 @@ var HashArray = require('hasharray');
 
 var MAX_CACHE_SIZE = 64;
 
+var IS_WHITESPACE = /^[\s]*$/;
+
 var DEFAULT_INTERNATIONALIZE_EXPAND_REGEXES = [
   {
     regex: /[åäàáâãæ]/ig,
@@ -41,6 +43,7 @@ var TrieSearch = function (keyFields, options) {
   this.options.maxCacheSize = this.options.maxCacheSize || MAX_CACHE_SIZE;
   this.options.cache = this.options.hasOwnProperty('cache') ? this.options.cache : true;
   this.options.splitOnRegEx = this.options.hasOwnProperty('splitOnRegEx') ? this.options.splitOnRegEx : /\s/g;
+  this.options.splitOnGetRegEx = this.options.splitOnGetRegEx || this.options.splitOnRegEx;
   this.options.min = this.options.min || 1;
   this.options.keepAll = this.options.hasOwnProperty('keepAll') ? this.options.keepAll : false;
   this.options.keepAllKey = this.options.hasOwnProperty('keepAllKey') ? this.options.keepAllKey : 'id';
@@ -161,17 +164,22 @@ TrieSearch.prototype = {
     if (this.options.splitOnRegEx && this.options.splitOnRegEx.test(key))
     {
       var phrases = key.split(this.options.splitOnRegEx);
+      var emptySplitMatch = phrases.filter(p => IS_WHITESPACE.test(p));
+      var selfMatch = phrases.filter(p => p === key);
+      var selfIsOnlyMatch = selfMatch.length + emptySplitMatch.length === phrases.length;
 
-      for (var i = 0, l = phrases.length; i < l; i++) {
-        // There is an edge case that a RegEx with a positive lookeahed like:
-        //  /?=[A-Z]/ // Split on capital letters for a camelcase sentence
-        // Will then match again when we call map, creating an infinite stack loop.
-        if (phrases[i] && phrases[i] !== key) {
-          this.map(phrases[i], value);
+      // There is an edge case that a RegEx with a positive lookeahed like:
+      //  /?=[A-Z]/ // Split on capital letters for a camelcase sentence
+      // Will then match again when we call map, creating an infinite stack loop.
+      if (!selfIsOnlyMatch) {
+        for (var i = 0, l = phrases.length; i < l; i++) {
+          if (!IS_WHITESPACE.test(phrases[i])) {
+            this.map(phrases[i], value);
+          }
         }
-      }
 
-      return;
+        return;
+      }
     }
 
     if (this.options.cache)
@@ -247,7 +255,7 @@ TrieSearch.prototype = {
 
     var ret = undefined,
       haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
-      words = this.options.splitOnRegEx ? phrase.split(this.options.splitOnRegEx) : [phrase];
+      words = this.options.splitOnGetRegEx ? phrase.split(this.options.splitOnGetRegEx) : [phrase];
 
     for (var w = 0, l = words.length; w < l; w++)
     {

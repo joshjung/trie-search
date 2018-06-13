@@ -678,18 +678,46 @@ describe('TrieSearch', function() {
     });
   });
 
-  describe('TrieSearch::map(...) works with RegEx with positive lookahead', function() {
-    var ts = new TrieSearch('key', {
-        splitOnRegEx: /([.\-\s]|(?=[A-Z]))/
-      }),
-      item = {};
-
+  describe('TrieSearch::map(...) works with RegEx with positive lookahead (e.g. split on capital letters)', function() {
     it('should not error', function() {
       try {
+        var ts = new TrieSearch('key', {
+            splitOnRegEx: /([.\-\s']|(?=[A-Z]))/,
+            splitOnGetRegEx: /[.\-\s']/,
+          }),
+          item = {someValue: 12345},
+          item2 = {someValue: 67890};
+
         ts.map('This IsSome.Phrase-Whatever', item);
       } catch (error) {
         assert(false, error ? error.toString() : '');
       }
+    });
+
+    it('should match capital letter breaks', function() {
+      var ts = new TrieSearch('key', {
+          splitOnRegEx: /([.\-\s']|(?=[A-Z]))/,
+          splitOnGetRegEx: /[.\-\s']/,
+        }),
+        item = {someValue: 12345},
+        item2 = {someValue: 67890};
+
+      ts.map('It\'sOnlyAFlesh Wound', item);
+      ts.map('WhatIsYourFavoriteColor', item2);
+
+      assert(ts.get('It')[0] === item, 'Did not properly match It');
+      assert(ts.get('s')[0] === item, 'Did not properly match s');
+      assert(ts.get('Only')[0] === item, 'Did not properly match Only');
+      assert(ts.get('A')[0] === item, 'Did not properly match A');
+      assert(ts.get('Flesh')[0] === item, 'Did not properly match Flesh');
+      assert(ts.get('Wound')[0] === item, 'Did not properly match Wound');
+
+      assert(ts.get('What')[0] === item2, 'Did not properly match What');
+      assert(ts.get('Is')[0] === item2, 'Did not properly match Is');
+      assert(ts.get('Your')[0] === item2, 'Did not properly match Your');
+      assert(ts.get('Fav')[0] === item2, 'Did not properly match Fav');
+      assert(ts.get('Favorite')[0] === item2, 'Did not properly match Favorite');
+      assert(ts.get('Color')[0] === item2, 'Did not properly match Color');
     });
   });
 });
