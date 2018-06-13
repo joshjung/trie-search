@@ -43,12 +43,13 @@ var TrieSearch = function (keyFields, options) {
   this.options.maxCacheSize = this.options.maxCacheSize || MAX_CACHE_SIZE;
   this.options.cache = this.options.hasOwnProperty('cache') ? this.options.cache : true;
   this.options.splitOnRegEx = this.options.hasOwnProperty('splitOnRegEx') ? this.options.splitOnRegEx : /\s/g;
-  this.options.splitOnGetRegEx = this.options.splitOnGetRegEx || this.options.splitOnRegEx;
+  this.options.splitOnGetRegEx = this.options.hasOwnProperty('splitOnGetRegEx') ? this.options.splitOnGetRegEx : this.options.splitOnRegEx;
   this.options.min = this.options.min || 1;
   this.options.keepAll = this.options.hasOwnProperty('keepAll') ? this.options.keepAll : false;
   this.options.keepAllKey = this.options.hasOwnProperty('keepAllKey') ? this.options.keepAllKey : 'id';
   this.options.idFieldOrFunction = this.options.hasOwnProperty('idFieldOrFunction') ? this.options.idFieldOrFunction : undefined;
   this.options.expandRegexes = this.options.expandRegexes || DEFAULT_INTERNATIONALIZE_EXPAND_REGEXES;
+  this.options.insertFullUnsplitKey = this.options.hasOwnProperty('insertFullUnsplitKey') ? this.options.insertFullUnsplitKey : false;
 
   this.keyFields = keyFields ? (keyFields instanceof Array ? keyFields : [keyFields]) : [];
   this.root = {};
@@ -178,7 +179,9 @@ TrieSearch.prototype = {
           }
         }
 
-        return;
+        if (!this.options.insertFullUnsplitKey) {
+          return;
+        }
       }
     }
 

@@ -683,7 +683,7 @@ describe('TrieSearch', function() {
       try {
         var ts = new TrieSearch('key', {
             splitOnRegEx: /([.\-\s']|(?=[A-Z]))/,
-            splitOnGetRegEx: /[.\-\s']/,
+            splitOnGetRegEx: false,
           }),
           item = {someValue: 12345},
           item2 = {someValue: 67890};
@@ -696,13 +696,14 @@ describe('TrieSearch', function() {
 
     it('should match capital letter breaks', function() {
       var ts = new TrieSearch('key', {
-          splitOnRegEx: /([.\-\s']|(?=[A-Z]))/,
-          splitOnGetRegEx: /[.\-\s']/,
+          splitOnRegEx: /([.\-\s'_]|(?=[A-Z]))/,
+          splitOnGetRegEx: false,
+          insertFullUnsplitKey: true
         }),
         item = {someValue: 12345},
         item2 = {someValue: 67890};
 
-      ts.map('It\'sOnlyAFlesh Wound', item);
+      ts.map('It\'sOnlyA_Flesh Wound', item);
       ts.map('WhatIsYourFavoriteColor', item2);
 
       assert(ts.get('It')[0] === item, 'Did not properly match It');
@@ -711,6 +712,7 @@ describe('TrieSearch', function() {
       assert(ts.get('A')[0] === item, 'Did not properly match A');
       assert(ts.get('Flesh')[0] === item, 'Did not properly match Flesh');
       assert(ts.get('Wound')[0] === item, 'Did not properly match Wound');
+      assert(ts.get('It\'sOnlyA_Flesh Wound')[0] === item, 'Did not properly match full phrase It\'sOnlyAFlesh Wound');
 
       assert(ts.get('What')[0] === item2, 'Did not properly match What');
       assert(ts.get('Is')[0] === item2, 'Did not properly match Is');
@@ -718,6 +720,7 @@ describe('TrieSearch', function() {
       assert(ts.get('Fav')[0] === item2, 'Did not properly match Fav');
       assert(ts.get('Favorite')[0] === item2, 'Did not properly match Favorite');
       assert(ts.get('Color')[0] === item2, 'Did not properly match Color');
+      assert(ts.get('WhatIsYourFavoriteColor')[0] === item2, 'Did not properly match full phrase WhatIsYourFavoriteColor');
     });
   });
 });
