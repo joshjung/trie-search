@@ -162,8 +162,14 @@ TrieSearch.prototype = {
     {
       var phrases = key.split(this.options.splitOnRegEx);
 
-      for (var i = 0, l = phrases.length; i < l; i++)
-        this.map(phrases[i], value);
+      for (var i = 0, l = phrases.length; i < l; i++) {
+        // There is an edge case that a RegEx with a positive lookeahed like:
+        //  /?=[A-Z]/ // Split on capital letters for a camelcase sentence
+        // Will then match again when we call map, creating an infinite stack loop.
+        if (phrases[i] && phrases[i] !== key) {
+          this.map(phrases[i], value);
+        }
+      }
 
       return;
     }

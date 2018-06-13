@@ -677,4 +677,19 @@ describe('TrieSearch', function() {
       assert(ts.get('ar').length === 1);
     });
   });
+
+  describe('TrieSearch::map(...) works with RegEx with positive lookahead', function() {
+    var ts = new TrieSearch('key', {
+        splitOnRegEx: /([.\-\s]|(?=[A-Z]))/
+      }),
+      item = {};
+
+    it('should not error', function() {
+      try {
+        ts.map('This IsSome.Phrase-Whatever', item);
+      } catch (error) {
+        assert(false, error ? error.toString() : '');
+      }
+    });
+  });
 });
