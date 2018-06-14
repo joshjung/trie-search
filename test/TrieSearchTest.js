@@ -596,4 +596,145 @@ describe('TrieSearch', function() {
       assert(result.length === 0, 'result has incorrect length: ' + result.length);
     });
   });
+
+  describe('TrieSearch::get(...) with internationalization turned on (default) should work', function() {
+    let as = 'åäàáâã'.split('');
+    let es = 'èéêë'.split('');
+    let is = 'ìíîï'.split('');
+    let os = 'òóôõö'.split('');
+    let us = 'ùúûü'.split('');
+    let aes = 'æ'.split('');
+
+    let ts = new TrieSearch('key'),
+        As_items =  as.map(letter => ({key: letter, arr: as})),
+        Es_items =  es.map(letter => ({key: letter, arr: es})),
+        Is_items =  is.map(letter => ({key: letter, arr: is})),
+        Os_items =  os.map(letter => ({key: letter, arr: os})),
+        Us_items =  us.map(letter => ({key: letter, arr: us})),
+        AEs_items = aes.map(letter => ({key: letter, arr: aes}));
+
+    ts.addAll(As_items);
+    ts.addAll(Es_items);
+    ts.addAll(Is_items);
+    ts.addAll(Os_items);
+    ts.addAll(Us_items);
+    ts.addAll(AEs_items);
+
+    it(`Should return international items for "a" -> any of "${as}"`, function() {
+      let items = ts.get('a');
+
+      // Note this will include overlap with the ae!
+      assert(items.length === 7);
+
+      items.forEach(i => {
+        assert(i.arr === as || i.arr === aes);
+      });
+    });
+
+    it(`Should return international items for "e" -> any of "${es}"`, function() {
+      let items = ts.get('e');
+      assert(items.length === 4);
+
+      items.forEach(i => {
+        assert(i.arr === es);
+      });
+    });
+
+    it(`Should return international items for "i" -> any of "${is}"`, function() {
+      let items = ts.get('i');
+      assert(items.length === 4);
+
+      items.forEach(i => {
+        assert(i.arr === is);
+      });
+    });
+
+    it(`Should return international items for "o" -> any of "${os}"`, function() {
+      let items = ts.get('o');
+      assert(items.length === 5);
+
+      items.forEach(i => {
+        assert(i.arr === os);
+      });
+    });
+
+    it(`Should return international items for "u" -> any of "${us}"`, function() {
+      let items = ts.get('u');
+      assert(items.length === 4);
+
+      items.forEach(i => {
+        assert(i.arr === us);
+      });
+    });
+
+    it(`Should return international items for Swedish as an example with ''godis på sötdag är bra''`, function() {
+      let swedishSentence = {key: 'godis på sötdag är bra'};
+
+      ts.add(swedishSentence);
+
+      assert(ts.get('pa').length === 1);
+      assert(ts.get('sot').length === 1);
+      assert(ts.get('ar').length === 1);
+    });
+  });
+
+  describe('TrieSearch::map(...) works with RegEx with positive lookahead (e.g. split on capital letters)', function() {
+    it('should not error', function() {
+      try {
+        var ts = new TrieSearch('key', {
+            splitOnRegEx: /([.\-\s']|(?=[A-Z]))/,
+            splitOnGetRegEx: false,
+          }),
+          item = {someValue: 12345},
+          item2 = {someValue: 67890};
+
+        ts.map('This IsSome.Phrase-Whatever', item);
+      } catch (error) {
+        assert(false, error ? error.toString() : '');
+      }
+    });
+
+    it('should match capital letter breaks', function() {
+      var ts = new TrieSearch('key', {
+          splitOnRegEx: /([.\-\s'_]|(?=[A-Z]))/,
+          splitOnGetRegEx: false,
+          insertFullUnsplitKey: true
+        }),
+        item = {someValue: 12345},
+        item2 = {someValue: 67890};
+
+      ts.map('It\'sOnlyA_Flesh Wound', item);
+      ts.map('WhatIsYourFavoriteColor', item2);
+
+      assert(ts.get('It')[0] === item, 'Did not properly match It');
+      assert(ts.get('s')[0] === item, 'Did not properly match s');
+      assert(ts.get('Only')[0] === item, 'Did not properly match Only');
+      assert(ts.get('A')[0] === item, 'Did not properly match A');
+      assert(ts.get('Flesh')[0] === item, 'Did not properly match Flesh');
+      assert(ts.get('Wound')[0] === item, 'Did not properly match Wound');
+      assert(ts.get('It\'sOnlyA_Flesh Wound')[0] === item, 'Did not properly match full phrase It\'sOnlyAFlesh Wound');
+
+      assert(ts.get('What')[0] === item2, 'Did not properly match What');
+      assert(ts.get('Is')[0] === item2, 'Did not properly match Is');
+      assert(ts.get('Your')[0] === item2, 'Did not properly match Your');
+      assert(ts.get('Fav')[0] === item2, 'Did not properly match Fav');
+      assert(ts.get('Favorite')[0] === item2, 'Did not properly match Favorite');
+      assert(ts.get('Color')[0] === item2, 'Did not properly match Color');
+      assert(ts.get('WhatIsYourFavoriteColor')[0] === item2, 'Did not properly match full phrase WhatIsYourFavoriteColor');
+    });
+
+    it('should match capital letter breaks', function() {
+      var ts = new TrieSearch('someValue', {
+          splitOnRegEx: /([.\-\s'_]|(?=[A-Z]))/,
+          splitOnGetRegEx: /[\s]/
+        }),
+        item = {someValue: 12345},
+        item2 = {someValue: 67890};
+
+      ts.map('WhatIsYourFavoriteColor', item2);
+
+      assert(ts.get('What Is')[0] === item2, 'Did not properly match What');
+      assert(ts.get('Color Favorite')[0] === item2, 'Did not properly match Is');
+    });
+  });
 });

@@ -2,6 +2,39 @@ var HashArray = require('hasharray');
 
 var MAX_CACHE_SIZE = 64;
 
+var IS_WHITESPACE = /^[\s]*$/;
+
+var DEFAULT_INTERNATIONALIZE_EXPAND_REGEXES = [
+  {
+    regex: /[åäàáâãæ]/ig,
+    alternate: 'a'
+  },
+  {
+    regex: /[èéêë]/ig,
+    alternate: 'e'
+  },
+  {
+    regex: /[ìíîï]/ig,
+    alternate: 'i'
+  },
+  {
+    regex: /[òóôõö]/ig,
+    alternate: 'o'
+  },
+  {
+    regex: /[ùúûü]/ig,
+    alternate: 'u'
+  },
+  {
+    regex: /[æ]/ig,
+    alternate: 'ae'
+  }
+];
+
+String.prototype.replaceCharAt=function(index, replacement) {
+  return this.substr(0, index) + replacement + this.substr(index + replacement.length);
+};
+
 var TrieSearch = function (keyFields, options) {
   this.options = options || {};
 
@@ -10,10 +43,13 @@ var TrieSearch = function (keyFields, options) {
   this.options.maxCacheSize = this.options.maxCacheSize || MAX_CACHE_SIZE;
   this.options.cache = this.options.hasOwnProperty('cache') ? this.options.cache : true;
   this.options.splitOnRegEx = this.options.hasOwnProperty('splitOnRegEx') ? this.options.splitOnRegEx : /\s/g;
+  this.options.splitOnGetRegEx = this.options.hasOwnProperty('splitOnGetRegEx') ? this.options.splitOnGetRegEx : this.options.splitOnRegEx;
   this.options.min = this.options.min || 1;
   this.options.keepAll = this.options.hasOwnProperty('keepAll') ? this.options.keepAll : false;
   this.options.keepAllKey = this.options.hasOwnProperty('keepAllKey') ? this.options.keepAllKey : 'id';
   this.options.idFieldOrFunction = this.options.hasOwnProperty('idFieldOrFunction') ? this.options.idFieldOrFunction : undefined;
+  this.options.expandRegexes = this.options.expandRegexes || DEFAULT_INTERNATIONALIZE_EXPAND_REGEXES;
+  this.options.insertFullUnsplitKey = this.options.hasOwnProperty('insertFullUnsplitKey') ? this.options.insertFullUnsplitKey : false;
 
   this.keyFields = keyFields ? (keyFields instanceof Array ? keyFields : [keyFields]) : [];
   this.root = {};
@@ -47,13 +83,49 @@ TrieSearch.prototype = {
         val = isKeyArr ? deepLookup(obj, key) : obj[key];
 
       if (!val) continue;
-      
-      val = val.toString();
 
+      val = val.toString();
       val = this.options.ignoreCase ? val.toLowerCase() : val;
 
-      this.map(val, obj);
+      var expandedValues = this.expandString(val);
+
+      for (var v = 0; v < expandedValues.length; v++) {
+        var expandedValue = expandedValues[v];
+
+        this.map(expandedValue, obj);
+      }
     }
+  },
+  /**
+   * By default using the options.expandRegexes, given a string like 'ö är bra', this will expand it to:
+   *
+   * ['ö är bra', 'o är bra', 'ö ar bra', 'o ar bra']
+   *
+   * By default this was built to allow for internationalization, but it could be also be expanded to
+   * allow for word alternates, etc. like spelling alternates ('teh' and 'the').
+   *
+   * This is used for insertion! This should not be used for lookup since if a person explicitly types
+   * 'ä' they probably do not want to see all results for 'a'.
+   *
+   * @param value The string to find alternates for.
+   * @returns {Array} Always returns an array even if no matches.
+   */
+  expandString: function(value) {
+    var values = [value];
+
+    if (this.options.expandRegexes && this.options.expandRegexes.length) {
+      for (var i = 0; i < this.options.expandRegexes.length; i++) {
+        var er = this.options.expandRegexes[i];
+        var match;
+
+        while((match = er.regex.exec(value)) !== null) {
+          var alternateValue = value.replaceCharAt(match.index, er.alternate);
+          values.push(alternateValue);
+        }
+      }
+    }
+
+    return values;
   },
   addAll: function (arr, customKeys) {
     for (var i = 0; i < arr.length; i++)
@@ -93,11 +165,24 @@ TrieSearch.prototype = {
     if (this.options.splitOnRegEx && this.options.splitOnRegEx.test(key))
     {
       var phrases = key.split(this.options.splitOnRegEx);
+      var emptySplitMatch = phrases.filter(p => IS_WHITESPACE.test(p));
+      var selfMatch = phrases.filter(p => p === key);
+      var selfIsOnlyMatch = selfMatch.length + emptySplitMatch.length === phrases.length;
 
-      for (var i = 0, l = phrases.length; i < l; i++)
-        this.map(phrases[i], value);
+      // There is an edge case that a RegEx with a positive lookeahed like:
+      //  /?=[A-Z]/ // Split on capital letters for a camelcase sentence
+      // Will then match again when we call map, creating an infinite stack loop.
+      if (!selfIsOnlyMatch) {
+        for (var i = 0, l = phrases.length; i < l; i++) {
+          if (!IS_WHITESPACE.test(phrases[i])) {
+            this.map(phrases[i], value);
+          }
+        }
 
-      return;
+        if (!this.options.insertFullUnsplitKey) {
+          return;
+        }
+      }
     }
 
     if (this.options.cache)
@@ -173,7 +258,7 @@ TrieSearch.prototype = {
 
     var ret = undefined,
       haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
-      words = this.options.splitOnRegEx ? phrase.split(this.options.splitOnRegEx) : [phrase];
+      words = this.options.splitOnGetRegEx ? phrase.split(this.options.splitOnGetRegEx) : [phrase];
 
     for (var w = 0, l = words.length; w < l; w++)
     {

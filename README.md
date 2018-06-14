@@ -3,28 +3,41 @@
 Trie-Search
 ==========
 
-A Trie is a data structure designed for rapid reTRIEval of objects. This was designed for use with a typeahead search.
+A Trie is a data structure designed for rapid reTRIEval of objects. This was designed for use with a type-ahead search (e.g.
+like a dropdown).
 
-Most Trie implementations in NPM right now only let you add and then determine if a word or phrase exists in the Trie.
+This data structure allows you to map sentences/words to objects, allowing rapid indexing and searching of massive dictionaries
+by partial matches. By default, sentences/words are split along word boundaries. For example, if your inserted mapping is
+'the quick brown fox', this object will be searchable by 'the', 'quick', 'brown', or 'fox' or any of their partials like
+'qui' or 'qu' or 'fo'. Word boundaries can be customized using the `splitOnRegEx` option explained in Setup below.
 
-This data structure allows you to map keys to objects, allowing rapid search of whatever dictionary you like.
+By default, the trie-search is now internationalized for a common set of vowels. So if you insert 'ö', then searching on 'o' will
+return that result. You can customize this by providing your own `expandRegexes` object. See the source for details.
 
-Note: as of now, keys are split along word boundaries! For example, if your key is 'the quick brown fox', the TrieSearch will be searchable by 'the', 'quick', 'brown', or 'fox'.
+Note: 
 
 Setup
 =====
 
 **`new TrieSearch(keyFields, options)`**
 
-`keyFields`: a single string or an array of strings representing what fields on added objects are to be used as keys for the trie search.
+`keyFields`: a single string or an array of strings representing what fields on added objects are to be used as keys for the
+trie search.
 
 `options`: settings to provide to the TrieSearch. To be expanded as functionality grows, but current structure is:
 
     {
-      min: 1,  // Minimum length of a key to store and search. By default this is 1, but you might improve performance by using 2 or 3
+      min: 1,                 // Minimum length of a key to store and search. By default this is 1,
+                              // but you might improve performance by using 2 or 3
       ignoreCase: true,
-      indexField: undefined, // Defaults to undefined. If specified, determines which rows are unique when using get().
-      splitOnRegEx: /\s/g // Default regular expression to split all keys into tokens. By default this is any whitespace. Set to 'false' if you have whitespace in your keys!
+      indexField: undefined,  // Defaults to undefined. If specified, determines which
+                              // rows are unique when using get().
+      splitOnRegEx: /\s/g     // Default regular expression to split all keys into tokens.
+                              // By default this is any whitespace. Set to 'false' if you have
+                              // whitespace in your keys!,
+      expandRegexes: [...]    // By default is an array of international vowels expansions, allowing
+                              // searches for vowels like 'a' to return matches on 'å' or 'ä' etc.
+                              // Set this to an empty array (`[]`) if you want to disable it.
     }
 
 Supported Types
@@ -32,7 +45,8 @@ Supported Types
 
 All values are converted to a Javascript String object via the `.toString()` method before inserted into the Trie structure.
 
-So the values `'1234'` and `1234` are functionally equivalent.
+So the words/sentences `'1234'` and `1234` are functionally equivalent. This is useful if you want to implement your own
+`toString()` method on a complex type.
 
 Example 1 (from Object)
 ======================
@@ -54,7 +68,8 @@ Example 1 (from Object)
     ts.get('an'); // Returns all 4 items above.
     ts.get('and'); // Returns all 3 items above that begin with 'and'
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andre'); // Returns only andrew.
+    ts.get('andre'); // Returns all 2 items above that begin with 'andr'
+    ts.get('andrew'); // Returns only andrew.
 
 Example 2 (add items individually or from Array)
 ======================
@@ -76,7 +91,8 @@ Example 2 (add items individually or from Array)
     ts.get('an'); // Returns all 4 items above.
     ts.get('and'); // Returns all 3 items above that begin with 'and'
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andre'); // Returns only andrew.
+    ts.get('andre'); // Returns all 2 items above that begin with 'andr'
+    ts.get('andrew'); // Returns only andrew.
 
 Example 3 (deep key lookup)
 ======================
@@ -119,7 +135,8 @@ Example 4 (options.min == 3)
     ts.get('an'); // Returns empty array, too short of search
     ts.get('and'); // Returns all 3 items above that begin with 'and'
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andre'); // Returns only andrew.
+    ts.get('andre'); // Returns all 2 items above that begin with 'andr'
+    ts.get('andrew'); // Returns only andrew.
     
 Example 5 (options.indexField = 'ix')
 ======================
@@ -159,7 +176,7 @@ Example 6 (get() OR of multiple phrases)
 
     ts.addAll(arr);
 
-    ts.get('andre'); // Returns only andrew.
+    ts.get('andre'); // Returns andrew AND andrea.
     ts.get(['andre', '25']); // Returns andrew AND andrea
     ts.get(['andre', 'jos']); // Returns andrew AND joseph
     ts.get(['21', '67']); // Returns andrew AND joseph
@@ -190,22 +207,22 @@ Example 7 (get() AND multiple phrases custom reducer / accumulator)
 Testing
 =======
 
-    npm i -g mocha
+    $ npm i -g mocha
 
-    >mocha
+    $ mocha
 
     START
 
       ․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․
 
-      67 passing (25ms)
+      73 passing (25ms)
 
 License
 =======
 
 The MIT License (MIT)
 
-Copyright (c) 2014 Joshua Jung
+Copyright (c) 2018 Joshua Jung
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
