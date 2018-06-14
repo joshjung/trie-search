@@ -36,6 +36,6 @@
     "hashtable"
   ],
   "dependencies": {
-    "hasharray": "^1.0.0"
+    "hasharray": "^1.1.1"
   }
 }
