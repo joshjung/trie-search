@@ -36,6 +36,11 @@ String.prototype.replaceCharAt=function(index, replacement) {
 };
 
 var TrieSearch = function (keyFields, options) {
+  if (typeof keyFields === 'object') {
+    options = keyFields;
+    keyFields = undefined;
+  }
+
   this.options = options || {};
 
   // Default ignoreCase to true
@@ -50,6 +55,7 @@ var TrieSearch = function (keyFields, options) {
   this.options.idFieldOrFunction = this.options.hasOwnProperty('idFieldOrFunction') ? this.options.idFieldOrFunction : undefined;
   this.options.expandRegexes = this.options.expandRegexes || DEFAULT_INTERNATIONALIZE_EXPAND_REGEXES;
   this.options.insertFullUnsplitKey = this.options.hasOwnProperty('insertFullUnsplitKey') ? this.options.insertFullUnsplitKey : false;
+  this.options.enableMisspellings = this.options.hasOwnProperty('enableMisspellings') ? this.options.enableMisspellings : false;
 
   this.keyFields = keyFields ? (keyFields instanceof Array ? keyFields : [keyFields]) : [];
   this.root = {};
@@ -169,7 +175,7 @@ TrieSearch.prototype = {
       var selfMatch = phrases.filter(p => p === key);
       var selfIsOnlyMatch = selfMatch.length + emptySplitMatch.length === phrases.length;
 
-      // There is an edge case that a RegEx with a positive lookeahed like:
+      // There is an edge case that a RegEx with a positive lookahead like:
       //  /?=[A-Z]/ // Split on capital letters for a camelcase sentence
       // Will then match again when we call map, creating an infinite stack loop.
       if (!selfIsOnlyMatch) {
@@ -197,32 +203,47 @@ TrieSearch.prototype = {
       key = key.toLowerCase();
     }
 
-    var keyArr = this.keyToArr(key),
-      self = this;
+    var self = this;
 
-    insert(keyArr, value, this.root);
+    if (this.options.enableMisspellings) {
+      var keys = [key];
+      var existsMap = {};
+      existsMap[keys[0]] = true;
 
-    function insert(keyArr, value, node) {
-      if (keyArr.length == 0)
-      {
-        node['value'] = node['value'] || [];
-        node['value'].push(value);
-        return; 
+      this.expandMisspellings(keys, existsMap);
+
+      for (var k = 0; k < keys.length; k++) insertKey(keys[k]);
+    } else {
+      insertKey(key);
+    }
+
+    function insertKey(key) {
+      // We reverse so we can do pop() which is faster than shift()
+      var keyArr = self.keyToArr(key).reverse();
+
+      insert(keyArr, value, self.root);
+
+      function insert(keyArr, value, node) {
+        if (keyArr.length == 0) {
+          node['value'] = node['value'] || [];
+          node['value'].push(value);
+          return;
+        }
+
+        var k = keyArr.pop();
+
+        if (!node[k])
+          self.size++;
+
+        node[k] = node[k] || {};
+
+        insert(keyArr, value, node[k])
       }
-
-      var k = keyArr.shift();
-
-      if (!node[k])
-        self.size++;
-
-      node[k] = node[k] || {};
-
-      insert(keyArr, value, node[k])
     }
   },
   keyToArr: function (key) {
     var keyArr;
-      
+
     if (this.options.min && this.options.min > 1)
     {
       if (key.length < this.options.min)
@@ -239,26 +260,72 @@ TrieSearch.prototype = {
     if (this.options.min > 0 && key.length < this.options.min)
       return [];
 
-    return f(this.keyToArr(key), this.root);
+    // We reverse so we can do pop() which is faster than shift()
+    return f(this.keyToArr(key).reverse(), this.root);
 
     function f(keyArr, node) {
       if (!node) return undefined;
       if (keyArr.length == 0) return node;
 
-      var k = keyArr.shift();
+      var k = keyArr.pop();
       return f(keyArr, node[k]);
     }
   },
+  expandMisspellings: function(words, existsMap) {
+    var l = words.length; // THIS LINE IS IMPORTANT since we are inserting into an array we
+                          // are looping over.
+
+    for (var w = 0; w < l; w++) {
+      concatDeletions(words[w]);
+      concatSwaps(words[w]);
+    }
+
+    /**
+     * A deletion would be like "androd" for "android"
+     */
+    function concatDeletions(word) {
+      var l = word.length;
+      for (var c = 1; c < l - 1; c++) {
+        var wordWithCharDeletion = word.substring(0, c) + word.substring(c + 1);
+
+        if (!existsMap[wordWithCharDeletion]) {
+          words.push(wordWithCharDeletion);
+          existsMap[wordWithCharDeletion] = true;
+        }
+      }
+    }
+
+    /**
+     * A swap would be like "teh" for "the" or "andriod" for "android"
+     */
+    function concatSwaps(word) {
+      var l = word.length;
+      for (var c = 1; c < l - 1; c++) {
+        var wordWithCharSwapWithNext = word.substring(0, c) + word.substring(c + 2, 1) + word.substring(c + 1, 1) + word.substring(c + 3);
+
+        if (!existsMap[wordWithCharSwapWithNext]) {
+          words.push(wordWithCharSwapWithNext);
+          existsMap[wordWithCharSwapWithNext] = true;
+        }
+      }
+    }
+  },
   _get: function (phrase) {
+    // Ignore case?
     phrase = this.options.ignoreCase ? phrase.toLowerCase() : phrase;
-    
+
+    // Is it cached?
     var c, node;
     if (this.options.cache && (c = this.getCache.get(phrase)))
       return c.value;
 
     var ret = undefined,
       haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
+      // Split our phrase into words
       words = this.options.splitOnGetRegEx ? phrase.split(this.options.splitOnGetRegEx) : [phrase];
+
+    // For each word, we do a separate lookup and aggregate the results for only items that
+    // have *every* word.
 
     for (var w = 0, l = words.length; w < l; w++)
     {
@@ -267,12 +334,13 @@ TrieSearch.prototype = {
 
       var temp = new HashArray(haKeyFields);
 
-      if (node = this.findNode(words[w]))
+      if (node = this.findNode(words[w])) {
         aggregate(node, temp);
+      }
 
       ret = ret ? ret.intersection(temp) : temp;
     }
-    
+
     var v = ret ? ret.all : [];
 
     if (this.options.cache)
@@ -282,10 +350,15 @@ TrieSearch.prototype = {
     }
 
     return v;
-    
+
     function aggregate(node, ha) {
-      if (node.value && node.value.length)
-        ha.addAll(node.value);
+      if (node.value && node.value.length) {
+        try {
+          ha.addAll(node.value);
+        } catch (error) {
+          console.error(error, ha, node.value);
+        }
+      }
 
       for (var k in node)
         if (k != 'value')
@@ -306,11 +379,19 @@ TrieSearch.prototype = {
 
     for (var i = 0, l = phrases.length; i < l; i++)
     {
+      /**
+       * Each passed in phrase will return a separate array of results.
+       *
+       * We then aggregate these together either with a reducer function OR by simply
+       * eliminating duplicates using the HashArray.
+       */
       var matches = this._get(phrases[i]);
 
       if (reducer) {
+        // Aggregate into single array of results using a reducer function
         accumulator = reducer(accumulator, phrases[i], matches, this);
       } else {
+        // Aggregate into single array of results by eliminating duplicates
         ret = ret ? ret.addAll(matches) : new HashArray(haKeyFields).addAll(matches);
       }
     }
