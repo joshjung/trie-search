@@ -165,8 +165,8 @@ TrieSearch.prototype = {
     if (this.options.splitOnRegEx && this.options.splitOnRegEx.test(key))
     {
       var phrases = key.split(this.options.splitOnRegEx);
-      var emptySplitMatch = phrases.filter(p => IS_WHITESPACE.test(p));
-      var selfMatch = phrases.filter(p => p === key);
+      var emptySplitMatch = phrases.filter(function(p) { return IS_WHITESPACE.test(p); });
+      var selfMatch = phrases.filter(function(p) { return p === key; });
       var selfIsOnlyMatch = selfMatch.length + emptySplitMatch.length === phrases.length;
 
       // There is an edge case that a RegEx with a positive lookeahed like:
