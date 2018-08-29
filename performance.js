@@ -7,20 +7,40 @@ var TrieSearch = require('./src/TrieSearch');
 var dict = require('./dictionary.json');
 var util = require('util');
 
+var lookups = ['a','e', 's', 't', 'ab', 'de', 'th', 'sh', 'ch', 'up', 'and', 'pre', 'post'];
 
-count = 0;
-for (var key in dict)
-count++;
-console.log('Dictionary loaded from JSON. Entries: ', count);
-var memStart = process.memoryUsage().heapTotal / 1048576;
-console.log('Memory: ' + memStart + ' MB');
-var ts = new TrieSearch();
-ts.addFromObject(dict);
+function run(options) {
+  count = 0;
+  for (var key in dict)
+    count++;
 
-console.log('Dictionary loaded into TrieSearch.');
-console.log('Sample of \'android\'', ts.get('android'));
+  var timeStart = new Date().getTime();
+  var memStart = process.memoryUsage().heapTotal / 1048576;
+  var ts = new TrieSearch(options);
+  ts.addFromObject(dict);
 
-console.log('Trie Node Count: ', ts.size);
+  console.log('\tSearch Items Added: ', count);
+  console.log('\tTrie Node Count: ', ts.size);
 
-var memEnd = process.memoryUsage().heapTotal / 1048576;
-console.log('Trie Memory Used: ' + (memEnd - memStart) + ' MB');
+  var time = new Date().getTime() - timeStart;
+  var memEnd = process.memoryUsage().heapTotal / 1048576;
+  console.log('\tTrie Memory Used: ' + (memEnd - memStart) + ' MB');
+  console.log('\tTime spent Inserting (ms)', time);
+
+  timeStart = new Date().getTime();
+
+  for (var i = 0; i < lookups.length; i++) {
+    ts.get(lookups[i]);
+  }
+
+  time = new Date().getTime() - timeStart;
+  console.log('\tTime spent retrieving (ms)', time);
+}
+
+console.log('-------------- Running enableMisspellings=false --------------');
+run();
+
+console.log('-------------- Running enableMisspellings=true --------------');
+run({
+  enableMisspellings: true
+});
