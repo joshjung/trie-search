@@ -113,12 +113,19 @@ Example 2 (add Array of items)
 Example 3 (custom mappings)
 ===========================
 
-var TrieSearch = require('trie-search');
-var ts = new TrieSearch('somethingIrrelevant');
+In some cases, you may want to directly add a mapping from an arbitrary string to an object.
 
-ts.map('word', 123);
+Note: the `map()` method is used internally for `add()` and `addAll()` so this is the "raw"
+way of adding things to the Trie.
 
-ts.get('wo'); // Returns 123
+    var TrieSearch = require('trie-search');
+    var ts = new TrieSearch('irrelevantForMapMethod');
+
+    ts.map('word', 123);
+
+    ts.get('wo'); // Returns [123]
+    ts.get('wor'); // Returns [123]
+    ts.get('word'); // Returns [123]
 
 Example 4 (deep key lookup)
 ======================
