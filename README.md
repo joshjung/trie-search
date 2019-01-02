@@ -40,6 +40,16 @@ trie search.
                               // examples.
     }
 
+Data Structure
+==============
+
+You can consider the Trie to be a single giant hashmap of a *key* to one or more *value object*. You can add any number of
+keys mapping to any number of objects. A key can map to many objects (for example the word 'Josh' might map to many user objects) and many keys can map to the same object (for example 'Josh' and 'Jung' might map to the same user object).
+
+Internally the Trie creates a tree of hashmaps for efficiency, where each hashmap is either a map between a single character and an array of matching objects (for a leaf node only) or another hashmap that is the next character in the key.
+
+For more information on how a Trie works, see: https://en.wikipedia.org/wiki/Trie
+
 Supported Key Types
 ===================
 
@@ -48,9 +58,9 @@ All key values are converted to a Javascript String object via the `.toString()`
 So the words/sentences `'1234'` and `1234` are functionally equivalent. This is useful if you want to implement your own
 `toString()` method on a complex type.
 
-Inserted value objects are left untouched.
+Inserted value objects are left untouched and can be anything.
 
-For example: `ts.map(123, new Date())` will map `123.toString()` to a new Date object.
+For example: `ts.map(123, new Date())` will map `(123).toString()` to a new Date object so effectively this will map the String `'123'` to the Date.
 
 Example 1 (from Object)
 ======================
