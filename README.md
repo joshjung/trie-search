@@ -43,10 +43,12 @@ trie search.
 Data Structure
 ==============
 
-You can consider the Trie to be a single giant hashmap of a *key* to one or more *value object*. You can add any number of
-keys mapping to any number of objects. A key can map to many objects (for example the word 'Josh' might map to many user objects) and many keys can map to the same object (for example 'Josh' and 'Jung' might map to the same user object).
+Essentially, the Trie is like a single hashmap of *keys* to one or more *value objects*. You can add any number of
+keys mapping to any number of objects. A key can map to many objects (for example the word 'Josh' might map to many user objects) and many keys can map to the same object (for example 'Josh' and 'Jung' might map to the same user object). When retrieving (`get('hello')`) by an input string, the Trie returns an Array of all objects that have keys that begin with the entered key (e.g. `'hello'`).
 
-Internally the Trie creates a tree of hashmaps for efficiency, where each hashmap is either a map between a single character and an array of matching objects (for a leaf node only) or another hashmap that is the next character in the key.
+Internally the Trie creates a tree of hashmaps for efficiency. Each hashmap is either a map between a single character in the added keys and an array of matching objects (for a leaf node) or another hashmap that is the next character in all available keys or the hash does not contain the character (no keys exist that match the requested string). This complexity is managed for you.
+
+When you request all items in the Trie that contain a string via the `get(str)` method the Trie concatenates all the leaf node arrays for the entire tree starting at the deepest node for the entered string, eliminates duplicates, and returns that Array. Or it returns nothing if the string does not exist in any entered keys.
 
 For more information on how a Trie works, see: https://en.wikipedia.org/wiki/Trie
 
