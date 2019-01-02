@@ -36,7 +36,8 @@ trie search.
       expandRegexes: [...]    // By default is an array of international vowels expansions, allowing
                               // searches for vowels like 'a' to return matches on 'å' or 'ä' etc.
                               // Set this to an empty array (`[]`) if you want to disable it. For
-                              // details on customization, see the top of the main JS file for examples.
+                              // details on customization, see top of src/TrieSearch.js file for
+                              // examples.
     }
 
 Supported Key Types
