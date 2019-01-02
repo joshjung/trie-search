@@ -1,10 +1,10 @@
 ![](https://nodei.co/npm/trie-search.png?downloads=True&stars=True)
 
 Trie-Search
-==========
+===========
 
 A Trie is a data structure designed for rapid reTRIEval of objects. This was designed for use with a type-ahead search (e.g.
-like a dropdown).
+like a web dropdown).
 
 This data structure allows you to map sentences/words to objects, allowing rapid indexing and searching of massive dictionaries
 by partial matches. By default, sentences/words are split along word boundaries. For example, if your inserted mapping is
@@ -13,8 +13,6 @@ by partial matches. By default, sentences/words are split along word boundaries.
 
 By default, the trie-search is now internationalized for a common set of vowels. So if you insert 'ö', then searching on 'o' will
 return that result. You can customize this by providing your own `expandRegexes` object. See the source for details.
-
-Note: 
 
 Setup
 =====
@@ -37,16 +35,21 @@ trie search.
                               // whitespace in your keys!,
       expandRegexes: [...]    // By default is an array of international vowels expansions, allowing
                               // searches for vowels like 'a' to return matches on 'å' or 'ä' etc.
-                              // Set this to an empty array (`[]`) if you want to disable it.
+                              // Set this to an empty array (`[]`) if you want to disable it. For
+                              // details on customization, see the top of the main JS file for examples.
     }
 
-Supported Types
-===============
+Supported Key Types
+===================
 
-All values are converted to a Javascript String object via the `.toString()` method before inserted into the Trie structure.
+All key values are converted to a Javascript String object via the `.toString()` method before inserted as keys into the Trie structure.
 
 So the words/sentences `'1234'` and `1234` are functionally equivalent. This is useful if you want to implement your own
 `toString()` method on a complex type.
+
+Inserted value objects are left untouched.
+
+For example: `ts.map(123, new Date())` will map `123.toString()` to a new Date object.
 
 Example 1 (from Object)
 ======================
@@ -71,7 +74,7 @@ Example 1 (from Object)
     ts.get('andre'); // Returns all 2 items above that begin with 'andr'
     ts.get('andrew'); // Returns only andrew.
 
-Example 2 (add items individually or from Array)
+Example 2 (add Array of items)
 ======================
 
     var TrieSearch = require('trie-search');
@@ -93,6 +96,16 @@ Example 2 (add items individually or from Array)
     ts.get('andr'); // Returns all 2 items above that begin with 'andr'
     ts.get('andre'); // Returns all 2 items above that begin with 'andr'
     ts.get('andrew'); // Returns only andrew.
+
+Example 3 (custom mappings)
+===========================
+
+var TrieSearch = require('trie-search');
+var ts = new TrieSearch('somethingIrrelevant');
+
+ts.map('word', 123);
+
+ts.get('wo'); // Returns 123
 
 Example 3 (deep key lookup)
 ======================
