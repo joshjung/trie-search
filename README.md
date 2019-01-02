@@ -108,7 +108,7 @@ ts.map('word', 123);
 
 ts.get('wo'); // Returns 123
 
-Example 3 (deep key lookup)
+Example 4 (deep key lookup)
 ======================
 
     var TrieSearch = require('trie-search');
@@ -129,7 +129,7 @@ Example 3 (deep key lookup)
 
     ts.get('21'); // Returns 'andrew' which has age of 21
 
-Example 4 (options.min == 3)
+Example 5 (options.min == 3)
 ======================
 
     var TrieSearch = require('trie-search');
@@ -152,7 +152,7 @@ Example 4 (options.min == 3)
     ts.get('andre'); // Returns all 2 items above that begin with 'andr'
     ts.get('andrew'); // Returns only andrew.
     
-Example 5 (options.indexField = 'ix')
+Example 6 (options.indexField = 'ix')
 ======================
 
 By default, the HashArray object (which TrieSearch uses) does not - for the sake of speed - verify object uniqueness by the object itself, but instead by a field on that object.
@@ -174,7 +174,7 @@ As a result, in order for `get()` to be used with multiple words, it is importan
     ts.get('andrew');        // Returns all items
     ts.get('andrew sweden'); // Returns all items without indexField. Returns only andrew in sweden with indexField.
 
-Example 6 (get() OR of multiple phrases)
+Example 7 (get() OR of multiple phrases)
 ======================
 
     var TrieSearch = require('trie-search');
@@ -196,7 +196,7 @@ Example 6 (get() OR of multiple phrases)
     ts.get(['21', '67']); // Returns andrew AND joseph
     ts.get(['21', '60603']); // Returns andrew AND joseph
 
-Example 7 (get() AND multiple phrases custom reducer / accumulator)
+Example 8 (get() AND multiple phrases custom reducer / accumulator)
 ======================
 
     var TrieSearch = require('trie-search');
