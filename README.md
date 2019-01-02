@@ -1,10 +1,10 @@
 ![](https://nodei.co/npm/trie-search.png?downloads=True&stars=True)
 
 Trie-Search
-==========
+===========
 
 A Trie is a data structure designed for rapid reTRIEval of objects. This was designed for use with a type-ahead search (e.g.
-like a dropdown).
+like a web dropdown).
 
 This data structure allows you to map sentences/words to objects, allowing rapid indexing and searching of massive dictionaries
 by partial matches. By default, sentences/words are split along word boundaries. For example, if your inserted mapping is
@@ -13,8 +13,6 @@ by partial matches. By default, sentences/words are split along word boundaries.
 
 By default, the trie-search is now internationalized for a common set of vowels. So if you insert 'ö', then searching on 'o' will
 return that result. You can customize this by providing your own `expandRegexes` object. See the source for details.
-
-Note: 
 
 Setup
 =====
@@ -37,16 +35,22 @@ trie search.
                               // whitespace in your keys!,
       expandRegexes: [...]    // By default is an array of international vowels expansions, allowing
                               // searches for vowels like 'a' to return matches on 'å' or 'ä' etc.
-                              // Set this to an empty array (`[]`) if you want to disable it.
+                              // Set this to an empty array (`[]`) if you want to disable it. For
+                              // details on customization, see top of src/TrieSearch.js file for
+                              // examples.
     }
 
-Supported Types
-===============
+Supported Key Types
+===================
 
-All values are converted to a Javascript String object via the `.toString()` method before inserted into the Trie structure.
+All key values are converted to a Javascript String object via the `.toString()` method before inserted as keys into the Trie structure.
 
 So the words/sentences `'1234'` and `1234` are functionally equivalent. This is useful if you want to implement your own
 `toString()` method on a complex type.
+
+Inserted value objects are left untouched.
+
+For example: `ts.map(123, new Date())` will map `123.toString()` to a new Date object.
 
 Example 1 (from Object)
 ======================
@@ -71,7 +75,7 @@ Example 1 (from Object)
     ts.get('andre'); // Returns all 2 items above that begin with 'andr'
     ts.get('andrew'); // Returns only andrew.
 
-Example 2 (add items individually or from Array)
+Example 2 (add Array of items)
 ======================
 
     var TrieSearch = require('trie-search');
@@ -94,7 +98,17 @@ Example 2 (add items individually or from Array)
     ts.get('andre'); // Returns all 2 items above that begin with 'andr'
     ts.get('andrew'); // Returns only andrew.
 
-Example 3 (deep key lookup)
+Example 3 (custom mappings)
+===========================
+
+var TrieSearch = require('trie-search');
+var ts = new TrieSearch('somethingIrrelevant');
+
+ts.map('word', 123);
+
+ts.get('wo'); // Returns 123
+
+Example 4 (deep key lookup)
 ======================
 
     var TrieSearch = require('trie-search');
@@ -115,7 +129,7 @@ Example 3 (deep key lookup)
 
     ts.get('21'); // Returns 'andrew' which has age of 21
 
-Example 4 (options.min == 3)
+Example 5 (options.min == 3)
 ======================
 
     var TrieSearch = require('trie-search');
@@ -138,7 +152,7 @@ Example 4 (options.min == 3)
     ts.get('andre'); // Returns all 2 items above that begin with 'andr'
     ts.get('andrew'); // Returns only andrew.
     
-Example 5 (options.indexField = 'ix')
+Example 6 (options.indexField = 'ix')
 ======================
 
 By default, the HashArray object (which TrieSearch uses) does not - for the sake of speed - verify object uniqueness by the object itself, but instead by a field on that object.
@@ -160,7 +174,7 @@ As a result, in order for `get()` to be used with multiple words, it is importan
     ts.get('andrew');        // Returns all items
     ts.get('andrew sweden'); // Returns all items without indexField. Returns only andrew in sweden with indexField.
 
-Example 6 (get() OR of multiple phrases)
+Example 7 (get() OR of multiple phrases)
 ======================
 
     var TrieSearch = require('trie-search');
@@ -182,7 +196,7 @@ Example 6 (get() OR of multiple phrases)
     ts.get(['21', '67']); // Returns andrew AND joseph
     ts.get(['21', '60603']); // Returns andrew AND joseph
 
-Example 7 (get() AND multiple phrases custom reducer / accumulator)
+Example 8 (get() AND multiple phrases custom reducer / accumulator)
 ======================
 
     var TrieSearch = require('trie-search');
