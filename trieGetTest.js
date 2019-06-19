@@ -33,10 +33,33 @@ var ts = new TrieSearch(
 ts.addFromObject(dict);
 console.log('Dictionary loaded into TrieSearch.');
 
+// Testing without limit
 // NOTE: Choosing s since that seems to have the largest number of results - 9950
 let avgTimeWithoutLimit = timeFunction(function () {
     ts.get('s')
 }, NUM_ITERATIONS)
+console.log("Avg time without-limit \t\t - ", avgTimeWithoutLimit, " ms")
 
-// Get the average time
-console.log("Avg time - ", avgTimeWithoutLimit)
+// Testing with limit
+var avgTimeWithLimit = timeFunction(function () {
+    ts.get('s', null, 10)
+}, NUM_ITERATIONS)
+console.log("Avg time with-limit 10 \t\t - ", avgTimeWithLimit, " ms")
+
+// Testing with limit 100
+var avgTimeWithLimit = timeFunction(function () {
+    ts.get('s', null, 100)
+}, NUM_ITERATIONS)
+console.log("Avg time with-limit 100 \t - ", avgTimeWithLimit, " ms")
+
+// Testing with limit 1000
+var avgTimeWithLimit = timeFunction(function () {
+    ts.get('s', null, 1000)
+}, NUM_ITERATIONS)
+console.log("Avg time with-limit 1000 \t - ", avgTimeWithLimit, " ms")
+
+// Testing with limit 10000
+var avgTimeWithLimit = timeFunction(function () {
+    ts.get('s', null, 10000)
+}, NUM_ITERATIONS)
+console.log("Avg time with-limit 10k \t - ", avgTimeWithLimit, " ms")
