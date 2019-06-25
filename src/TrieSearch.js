@@ -249,11 +249,18 @@ TrieSearch.prototype = {
       return f(keyArr, node[k]);
     }
   },
+  _getCacheKey: function(phrase, limit){
+    var cacheKey = phrase
+    if(limit) {
+      cacheKey = phrase + "_" + limit
+    }
+    return cacheKey
+  },
   _get: function (phrase, limit) {
     phrase = this.options.ignoreCase ? phrase.toLowerCase() : phrase;
     
     var c, node;
-    if (this.options.cache && (c = this.getCache.get(phrase)))
+    if (this.options.cache && (c = this.getCache.get(this._getCacheKey(phrase, limit))))
       return c.value;
 
     var ret = undefined,
@@ -277,7 +284,8 @@ TrieSearch.prototype = {
 
     if (this.options.cache)
     {
-      this.getCache.add({key: phrase, value: v});
+      var cacheKey = this._getCacheKey(phrase, limit)
+      this.getCache.add({key: cacheKey, value: v});
       this.cleanCache();
     }
 

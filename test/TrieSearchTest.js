@@ -739,8 +739,8 @@ describe('TrieSearch', function() {
   });
 
   describe('TrieSearch:TrieSearch::get(...) should work with limits', function() {
-    // NOTE: Cache is set to false since we are mixing both limits and without limits
-    var ts = new TrieSearch(null, {cache: false});
+    // NOTE: Cache is set to true since caching also needs to be tested
+    var ts = new TrieSearch(null, {cache: true});
     var obj = {
       "a": ["data"],
       "ab": ["data"],
