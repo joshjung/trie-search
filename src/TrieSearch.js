@@ -249,11 +249,18 @@ TrieSearch.prototype = {
       return f(keyArr, node[k]);
     }
   },
-  _get: function (phrase) {
+  _getCacheKey: function(phrase, limit){
+    var cacheKey = phrase
+    if(limit) {
+      cacheKey = phrase + "_" + limit
+    }
+    return cacheKey
+  },
+  _get: function (phrase, limit) {
     phrase = this.options.ignoreCase ? phrase.toLowerCase() : phrase;
     
     var c, node;
-    if (this.options.cache && (c = this.getCache.get(phrase)))
+    if (this.options.cache && (c = this.getCache.get(this._getCacheKey(phrase, limit))))
       return c.value;
 
     var ret = undefined,
@@ -277,22 +284,39 @@ TrieSearch.prototype = {
 
     if (this.options.cache)
     {
-      this.getCache.add({key: phrase, value: v});
+      var cacheKey = this._getCacheKey(phrase, limit)
+      this.getCache.add({key: cacheKey, value: v});
       this.cleanCache();
     }
 
     return v;
     
     function aggregate(node, ha) {
-      if (node.value && node.value.length)
-        ha.addAll(node.value);
+      if(limit && ha.all.length === limit) {
+        return
+      }
 
-      for (var k in node)
-        if (k != 'value')
+      if (node.value && node.value.length) {
+        if(!limit || (ha.all.length + node.value.length) < limit) {
+          ha.addAll(node.value);
+        } else {
+          // Limit is less than the number of entries in the node.value + ha combined
+          ha.addAll(node.value.slice(0, limit - ha.all.length))
+          return
+        }
+      }
+
+      for (var k in node) {
+        if (limit && ha.all.length === limit){
+          return
+        }
+        if (k != 'value') {
           aggregate(node[k], ha);
+        }
+      }
     }
   },
-  get: function (phrases, reducer) {
+  get: function (phrases, reducer, limit) {
     var self = this,
       haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
       ret = undefined,
@@ -306,7 +330,7 @@ TrieSearch.prototype = {
 
     for (var i = 0, l = phrases.length; i < l; i++)
     {
-      var matches = this._get(phrases[i]);
+      var matches = this._get(phrases[i], limit);
 
       if (reducer) {
         accumulator = reducer(accumulator, phrases[i], matches, this);

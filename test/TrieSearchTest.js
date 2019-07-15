@@ -737,4 +737,36 @@ describe('TrieSearch', function() {
       assert(ts.get('Color Favorite')[0] === item2, 'Did not properly match Is');
     });
   });
+
+  describe('TrieSearch:TrieSearch::get(...) should work with limits', function() {
+    // NOTE: Cache is set to true since caching also needs to be tested
+    var ts = new TrieSearch(null, {cache: true});
+    var obj = {
+      "a": ["data"],
+      "ab": ["data"],
+      "abc": ["data"],
+      "abcd": ["data"],
+      "abcde": ["data"],
+      "abcdef": ["data"],
+    }
+    ts.addFromObject(obj);
+
+    it('Get with limits and get without limits should work properly', function() {
+      var getWithoutLimit = ts.get("a")
+      assert(getWithoutLimit.length === 6, "Expected 6 in without-limit get")
+
+      var getWithLimitResp= ts.get("a", null, 4)
+      assert(getWithLimitResp.length === 4, "Expected 4 in with-limit get")
+    });
+
+    it('Failure case with limits should work properly', function() {
+      var getWithLimit = ts.get("b", null, 4)
+      assert(getWithLimit.length === 0, "Expected 0 in with-limit get")
+    });
+
+    it('A bigger limit value than the actual amount of data must work properly', function() {
+      var getWithLimit = ts.get("a", null, 100)
+      assert(getWithLimit.length === 6, "Expected 6 in with-limit get")
+    });
+  });
 });
