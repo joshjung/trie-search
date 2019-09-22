@@ -85,7 +85,6 @@ TrieSearch.prototype = {
       if (!val) continue;
 
       val = val.toString();
-      val = this.options.ignoreCase ? val.toLowerCase() : val;
 
       var expandedValues = this.expandString(val);
 
