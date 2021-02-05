@@ -54,6 +54,7 @@
     "@types/lodash.get": "^4.4.6",
     "assert": "^2.0.0",
     "husky": "^4.3.8",
+    "jest-sonar-reporter": "^2.0.0",
     "prettier": "^2.2.1",
     "size-limit": "^4.9.2",
     "tsdx": "^0.14.1",
@@ -76,5 +77,17 @@
       "pre-commit": "yarn test"
     }
   },
-  "module": "dist/trie-search.esm.js"
+  "module": "dist/trie-search.esm.js",
+  "jest": {
+    "testEnvironment": "jsdom",
+    "collectCoverage": true,
+    "testResultsProcessor": "jest-sonar-reporter",
+    "coveragePathIgnorePatterns": [
+      "setupTests.tsx",
+      ".*/index.ts",
+      ".*.spec.ts",
+      ".*/stories/.*",
+      ".*.stories.tsx"
+    ]
+  }
 }
