@@ -24,7 +24,8 @@
     "size": "size-limit",
     "analyze": "size-limit --why",
     "format": "prettier --ignore-unknown --write .",
-    "format:check": "prettier --ignore-unknown --check ."
+    "format:check": "prettier --ignore-unknown --check .",
+    "performance-test": "node performance.js"
   },
   "repository": {
     "type": "git",
