@@ -1,14 +1,17 @@
 {
-  "name": "trie-search",
-  "author": "Joshua Jung <joshua.p.jung@gmail.com>",
+  "name": "@commitd/trie-search",
+  "author": "Jonathan Elliot <jon@committed.io>",
   "license": "MIT",
+  "private": false,
   "description": "A trie implementation that maps keys to objects for rapid retrieval by phrases. Most common use will be for typeahead searches.",
-  "version": "1.3.4",
+  "version": "0.1.0",
   "main": "dist/index.js",
-  "url": "https://github.com/joshjung/trie-search",
-  "homepage": "https://github.com/joshjung/trie-search",
-  "email": "joshua.p.jung@gmail.com",
-  "typings": "dist/index.d.ts",
+  "url": "https://github.com/commitd/trie-search",
+  "homepage": "https://github.com/commitd/trie-search",
+  "email": "contact@committed.io",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "engines": {
     "node": ">=10"
   },
@@ -25,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/joshjung/trie-search.git"
+    "url": "https://github.com/commitd/trie-search.git"
   },
   "files": [
     "dist",
