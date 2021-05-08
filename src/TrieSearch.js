@@ -235,9 +235,6 @@ TrieSearch.prototype = {
     return keyArr;
   },
   findNode: function (key) {
-    if (this.options.min > 0 && key.length < this.options.min)
-      return [];
-
     return f(this.keyToArr(key), this.root);
 
     function f(keyArr, node) {
