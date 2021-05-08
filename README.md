@@ -13,7 +13,7 @@ By default, sentences/words are split along whitespace boundaries. For example, 
 'qui' or 'qu' or 'fo'. Boundaries can be customized using the `splitOnRegEx` option explained in Setup below.
 
 By default, the trie-search is now internationalized for a common set of vowels. So if you insert 'ö', then searching on 'o' will
-return that result. You can customize this by providing your own `expandRegexes` object. See the source for details.
+return that result. You can customize this by providing your own `expandRegexes` object.
 
 # Install
 
@@ -81,7 +81,8 @@ trie search.
                                     // whitespace in your keys! Set it something else to split along other boundaries.
       expandRegexes: [...]          // By default is an array of international vowels expansions, allowing
                                     // searches for vowels like 'a' to return matches on 'å' or 'ä' etc.
-                                    // Set this to an empty array (`[]`) if you want to disable it.
+                                    // Set this to an empty array (`[]`) if you want to disable it. Dee top of src/TrieSearch.js 
+                                    // file for examples.
     }
 ```
 
@@ -103,16 +104,31 @@ Retrieved "android" items ( 1 ) in  0  ms.
 
 Note that retrieving longer words takes less time because it has to return fewer results.
 
+# Data Structure
+
+Essentially, the Trie is like a single hashmap of *keys* to one or more *value objects*. You can add any number of
+keys mapping to any number of objects. A key can map to many objects (for example the word 'Josh' might map to many user objects) and many keys can map to the same object (for example 'Josh' and 'Jung' might map to the same user object). When retrieving (`get('hello')`) by an input string, the Trie returns an Array of all objects that have keys that begin with the entered key (e.g. `'hello'`).
+
+Internally the Trie creates a tree of hashmaps for efficiency. Each hashmap is either a map between a single character in the added keys and an array of matching objects (for a leaf node) or another hashmap that is the next character in all available keys or the hash does not contain the character (no keys exist that match the requested string). This complexity is managed for you.
+
+When you request all items in the Trie that contain a string via the `get(str)` method the Trie concatenates all the leaf node arrays for the entire tree starting at the deepest node for the entered string, eliminates duplicates, and returns that Array. Or it returns nothing if the string does not exist in any entered keys.
+
+For more information on how a Trie works, see [Wikipedia Trie](https://en.wikipedia.org/wiki/Trie)
+
 # Supported Key Types
 
-All keys are converted to a Javascript String object via the `.toString()` method before inserted into the Trie structure.
+All key values are converted to a Javascript String object via the `.toString()` method before inserted as keys into the Trie structure.
 
 So the words/sentences `'1234'` and `1234` are functionally equivalent. This is useful if you want to implement your own
 `toString()` method on a complex type and `map()` from that to another object.
 
+Inserted value objects are left untouched and can be anything.
+
+For example: `ts.map(123, new Date())` will map `(123).toString()` to a new Date object so effectively this will map the String `'123'` to the Date.
+
 # Examples
 
-## From Object
+## Map Object Keys
 
 ```
     import TrieSearch from 'trie-search';
@@ -136,7 +152,7 @@ So the words/sentences `'1234'` and `1234` are functionally equivalent. This is 
     trie.search('andrew');  // Returns only andrew.
 ```
 
-## From Array
+## Add Array
 
 ```
     import TrieSearch from 'trie-search';
@@ -188,12 +204,12 @@ Sometimes you might have a nested Object structure. In that case, you might want
 based on the contents of one of its child objects.
 
 Note: this does not work if the item at the key is an array. You will need to manually add those items using
-the `map()` function.
+the `map()` function. See `Deep Array Mapping` below for how to do that.
 
 ```
     import TrieSearch from 'trie-search';
 
-    const arr = [
+    const people = [
       { name: 'andrew', details: { age: 21 } },
       { name: 'andy', details: { age: 37 } },
       { name: 'andrea', details: { age: 25 } },
@@ -201,13 +217,13 @@ the `map()` function.
     ];
 
     const trie = new TrieSearch([
-      'name', // Searches `object.name`
-      ['details', 'age'] // `Search object.details.age`
+      'name',               // Searches `object.name`
+      ['details', 'age']    // Searches `object.details.age`
     ]);
 
-    trie.addAll(arr);
+    trie.addAll(people);
 
-    trie.search('21'); // Returns 'andrew' which has age of 21
+    trie.search('21'); // Returns 'andrew' which has details.age of 21
 ```
 
 ## Deep Array Mapping
@@ -332,7 +348,7 @@ You can specify this using the `indexField` option:
       idFieldOrFunction: 'id' // Required to uniquely identify during union (AND)
     });
 
-    trie.addAll(arr);
+    trie.addAll(people);
 
     trie.search(['andrew', '25'], TrieSearch.UNION_REDUCER); // [person3]
     trie.search(['andrew', '50'], TrieSearch.UNION_REDUCER); // []
@@ -342,13 +358,19 @@ You can specify this using the `indexField` option:
 # Testing
 
 ```
-    $ npm i -g mocha
-    $ mocha
+    $ npm i -g jest
+    $ npm test
 
-    ...
-
-      78 passing (45ms)
+    Test Suites: 1 passed, 1 total
+    Tests:       81 passed, 81 total
+    Snapshots:   0 total
+    Time:        1.754 s
 ```
+
+# Contributing
+
+Feel free to fork and make changes or submit a Pull Request :) I'm pretty busy but will eventually get around to getting your
+changes published.
 
 # License
 
