@@ -14,6 +14,19 @@ describe('TrieSearch', function() {
     });
   });
   
+  describe('map(key, value) and search(str) should work', function() {
+    it('should be able to call map() and search()', function() {
+      var ts = new TrieSearch();
+
+      ts.map('hello', 'world');
+
+      assert.equal(ts.search('hel').length, 1);
+      assert.equal(ts.search('hell').length, 1);
+      assert.equal(ts.search('hello').length, 1);
+      assert.equal(ts.search('hel')[0], 'world');
+    });
+  });
+
   describe('new TrieSearch(keyFields).keyToArr should work', function() {
     it('\'key\' -> [\'k\', \'e\', \'y\']', function() {
       var ts = new TrieSearch();
@@ -735,6 +748,18 @@ describe('TrieSearch', function() {
 
       assert(ts.get('What Is')[0] === item2, 'Did not properly match What');
       assert(ts.get('Color Favorite')[0] === item2, 'Did not properly match Is');
+    });
+
+    it('should split on various other word breaks', function() {
+      var ts = new TrieSearch('someValue', { splitOnRegEx: /[\s\/\(\)]/ }),
+        item = {someValue: 12345},
+        item2 = {someValue: 67890};
+
+      ts.map('Hello/World', item);
+      ts.map("What's(Up)", item2);
+
+      assert(ts.search('Hello')[0] === item, 'Did not properly match Hello');
+      assert(ts.search('Up')[0] === item2, 'Did not properly match Up');
     });
   });
 });

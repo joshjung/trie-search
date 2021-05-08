@@ -5,22 +5,39 @@
 
 var TrieSearch = require('./src/TrieSearch');
 var dict = require('./dictionary.json');
-var util = require('util');
 
 
 count = 0;
-for (var key in dict)
-count++;
-console.log('Dictionary loaded from JSON. Entries: ', count);
+
+// Count the keys in the dictionary
+for (var key in dict) count++;
+
+console.log('English Dictionary loaded from JSON. Word count: ', count);
 var memStart = process.memoryUsage().heapTotal / 1048576;
-console.log('Memory: ' + memStart + ' MB');
+console.log('Memory before index: ' + memStart + ' MB');
+var startTime = new Date();
 var ts = new TrieSearch();
 ts.addFromObject(dict);
 
-console.log('Dictionary loaded into TrieSearch.');
-console.log('Sample of \'android\'', ts.get('android'));
+var endTime = new Date();
+console.log('Dictionary inserted and indexed into TrieSearch in ', endTime.getTime() - startTime.getTime(), ' ms.');
 
 console.log('Trie Node Count: ', ts.size);
 
 var memEnd = process.memoryUsage().heapTotal / 1048576;
 console.log('Trie Memory Used: ' + (memEnd - memStart) + ' MB');
+
+var startTime = new Date();
+var results = ts.get('a');
+var endTime = new Date();
+console.log('Retrieved "a" items (', results.length, ') in ', endTime.getTime() - startTime.getTime(), ' ms.');
+
+var startTime = new Date();
+var results = ts.get('andr');
+var endTime = new Date();
+console.log('Retrieved "andr" items (', results.length, ') in ', endTime.getTime() - startTime.getTime(), ' ms.');
+
+var startTime = new Date();
+var results = ts.get('android');
+var endTime = new Date();
+console.log('Retrieved "android" items (', results.length, ') in ', endTime.getTime() - startTime.getTime(), ' ms.');

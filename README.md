@@ -1,228 +1,360 @@
 ![](https://nodei.co/npm/trie-search.png?downloads=True&stars=True)
 
-Trie-Search
-==========
+# Trie-Search
 
-A Trie is a data structure designed for rapid reTRIEval of objects. This was designed for use with a type-ahead search (e.g.
-like a dropdown).
+A Trie is a data structure designed for quick reTRIEval of objects by string search. This was designed for use with a
+type-ahead search (e.g. like a dropdown) but could be used in a variety of situations.
 
-This data structure allows you to map sentences/words to objects, allowing rapid indexing and searching of massive dictionaries
-by partial matches. By default, sentences/words are split along word boundaries. For example, if your inserted mapping is
+This data structure indexes sentences/words to objects for searching by full or partial matches. So you can map 'hello' to an Object,
+and then search by 'hel', 'hell', or 'hello' and get the Object or an Array of all objects that match.
+
+By default, sentences/words are split along whitespace boundaries. For example, if your inserted mapping is
 'the quick brown fox', this object will be searchable by 'the', 'quick', 'brown', or 'fox' or any of their partials like
-'qui' or 'qu' or 'fo'. Word boundaries can be customized using the `splitOnRegEx` option explained in Setup below.
+'qui' or 'qu' or 'fo'. Boundaries can be customized using the `splitOnRegEx` option explained in Setup below.
 
 By default, the trie-search is now internationalized for a common set of vowels. So if you insert 'ö', then searching on 'o' will
 return that result. You can customize this by providing your own `expandRegexes` object. See the source for details.
 
-Note: 
+# Install
 
-Setup
-=====
+```
+npm i --save trie-search
+yarn add trie-search
+```
+
+# Backwards Compatibility
+
+Note: I have added the `search(str)` function that functions identically to the old `get(str)` function. The `get(str)` function
+remains and can still be used.
+
+# Basic Usage (ES6)
+
+```
+  import TrieSearch from 'trie-search';
+
+  const trie = new TrieSearch();
+
+  trie.map('hello', 'world'); // Map 'hello' to the String 'world'
+  trie.map('here', 'is a trie search'); // Map 'hello' to the String 'world'
+
+  trie.search('he');    // ['world', 'is a trie search]
+  trie.search('her');   // ['is a trie search]
+  trie.search('hel');   // ['world']
+  trie.search('hello'); // ['world']
+```
+
+# Basic Usage (ES5)
+
+```
+  var TrieSearch = require('trie-search');
+  var trie = new TrieSearch();
+
+  trie.map('hello', 'world'); // Map 'hello' to the String 'world'
+  trie.map('here', 'is a trie search'); // Map 'hello' to the String 'world'
+
+  trie.search('he');    // ['world', 'is a trie search]
+  trie.search('her');   // ['is a trie search]
+  trie.search('hel');   // ['world']
+  trie.search('hello'); // ['world']
+```
+
+# Setup
 
 **`new TrieSearch(keyFields, options)`**
 
-`keyFields`: a single string or an array of strings representing what fields on added objects are to be used as keys for the
+`keyFields`: a single string or an array of strings/arrays representing what fields on added objects are to be used as keys for the
 trie search.
 
-`options`: settings to provide to the TrieSearch. To be expanded as functionality grows, but current structure is:
+`options`: settings to provide to the TrieSearch:
 
+```
     {
-      min: 1,                 // Minimum length of a key to store and search. By default this is 1,
-                              // but you might improve performance by using 2 or 3
-      ignoreCase: true,
-      indexField: undefined,  // Defaults to undefined. If specified, determines which
-                              // rows are unique when using get().
-      splitOnRegEx: /\s/g     // Default regular expression to split all keys into tokens.
-                              // By default this is any whitespace. Set to 'false' if you have
-                              // whitespace in your keys!,
-      expandRegexes: [...]    // By default is an array of international vowels expansions, allowing
-                              // searches for vowels like 'a' to return matches on 'å' or 'ä' etc.
-                              // Set this to an empty array (`[]`) if you want to disable it.
+      min: 1,                       // Minimum length of a key to store and search. By default this is 1,
+                                    // but you might improve performance by using 2 or 3
+      ignoreCase: true,             // Self-explanatory
+      indexField: undefined,        // Defaults to undefined. If specified, determines which
+                                    // rows are unique when using search().
+      idFieldOrFunction: undefined, // Honestly, this conflicts a bit with indexField. I need to fix that. This is only used
+                                    // when using the UNION_REDUCER, explained in the Examples
+      splitOnRegEx: /\s/g           // Regular expression to split all keys into tokens.
+                                    // By default this is any whitespace. Set to 'false' if you have
+                                    // whitespace in your keys! Set it something else to split along other boundaries.
+      expandRegexes: [...]          // By default is an array of international vowels expansions, allowing
+                                    // searches for vowels like 'a' to return matches on 'å' or 'ä' etc.
+                                    // Set this to an empty array (`[]`) if you want to disable it.
     }
+```
 
-Supported Types
-===============
+# Performance
 
-All values are converted to a Javascript String object via the `.toString()` method before inserted into the Trie structure.
+You can test performance yourself using the `node performance.js` process included in the package. Testing on my 2015 Mac Pro with 2.5 GHZ
+I get these results:
+
+```
+English Dictionary loaded from JSON. Word count:  86036
+Memory before index: 55.73046875 MB
+Dictionary inserted and indexed into TrieSearch in  484  ms.
+Trie Node Count:  280206
+Trie Memory Used: 34.78515625 MB
+Retrieved "a" items ( 6125 ) in  25  ms.
+Retrieved "andr" items ( 17 ) in  5  ms.
+Retrieved "android" items ( 1 ) in  0  ms.
+```
+
+Note that retrieving longer words takes less time because it has to return fewer results.
+
+# Supported Key Types
+
+All keys are converted to a Javascript String object via the `.toString()` method before inserted into the Trie structure.
 
 So the words/sentences `'1234'` and `1234` are functionally equivalent. This is useful if you want to implement your own
-`toString()` method on a complex type.
+`toString()` method on a complex type and `map()` from that to another object.
 
-Example 1 (from Object)
-======================
+# Examples
 
-    var TrieSearch = require('trie-search');
+## From Object
 
-    var object = {
-      'andrew': {age: 21},
-      'andy': {age: 37},
-      'andrea': {age: 25},
-      'annette': {age: 67},
+```
+    import TrieSearch from 'trie-search';
+
+    const peopleByName = {
+      'andrew': { age: 21 },
+      'andy': { age: 37 },
+      'andrea': { age: 25 },
+      'annette': { age: 67 },
     };
 
-    var ts = new TrieSearch();
+    const trie = new TrieSearch();
 
-    ts.addFromObject(object);
+    trie.addFromObject(peopleByName);
 
-    ts.get('a'); // Returns all 4 items above.
-    ts.get('an'); // Returns all 4 items above.
-    ts.get('and'); // Returns all 3 items above that begin with 'and'
-    ts.get('andr'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andre'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andrew'); // Returns only andrew.
+    trie.search('a');       // Returns all 4 items above.
+    trie.search('an');      // Returns all 4 items above.
+    trie.search('and');     // Returns all 3 items above that begin with 'and'
+    trie.search('andr');    // Returns all 2 items above that begin with 'andr'
+    trie.search('andre');   // Returns all 2 items above that begin with 'andr'
+    trie.search('andrew');  // Returns only andrew.
+```
 
-Example 2 (add items individually or from Array)
-======================
+## From Array
 
-    var TrieSearch = require('trie-search');
+```
+    import TrieSearch from 'trie-search';
 
-    var arr = [
-      {name: 'andrew', age: 21},
-      {name: 'andy', age: 37},
-      {name: 'andrea', age: 25},
-      {name: 'annette', age: 67}
+    const people = [
+      { name: 'andrew', age: 21 },
+      { name: 'andy', age: 37 },
+      { name: 'andrea', age: 25 },
+      { name: 'annette', age: 67 }
     ];
 
-    var ts = new TrieSearch('name');
+    const trie = new TrieSearch('name');
 
-    ts.addAll(arr);
+    trie.addAll(people);
 
-    ts.get('a'); // Returns all 4 items above.
-    ts.get('an'); // Returns all 4 items above.
-    ts.get('and'); // Returns all 3 items above that begin with 'and'
-    ts.get('andr'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andre'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andrew'); // Returns only andrew.
+    trie.search('a');       // Returns all 4 items above.
+    trie.search('an');      // Returns all 4 items above.
+    trie.search('and');     // Returns all 3 items above that begin with 'and'
+    trie.search('andr');    // Returns all 2 items above that begin with 'andr'
+    trie.search('andre');   // Returns all 2 items above that begin with 'andr'
+    trie.search('andrew');  // Returns only andrew.
+```
 
-Example 3 (deep key lookup)
-======================
+## Custom Word Boundaries
 
-    var TrieSearch = require('trie-search');
+```
+    import TrieSearch from 'trie-search';
 
-    var arr = [
-      {name: 'andrew', details: {age: 21}},
-      {name: 'andy', details: {age: 37}},
-      {name: 'andrea', details: {age: 25}},
-      {name: 'annette', details: {age: 67}}
+    const tasks = [
+      { name: 'Start project', description: 'Need to get this thing off the ground!' },
+      { name: 'Setup Drag/Drop', description: 'Need to be able to drag / drop things around' },
+      { name: 'Talk to Andreas (need advice)', description: '' }
     ];
 
-    var ts = new TrieSearch([
+    const trie = new TrieSearch('name', {
+      splitOnRegEx: /[\s\/\(\)]/ // Split on '/' and '(' and ')' and whitespace
+    });
+
+    trie.addAll(tasks);
+
+    trie.search('Drag');    // Returns 'Setup Drag/Drop'
+    trie.search('Drop');    // Returns 'Setup Drag/Drop'
+    trie.search('need');    // Returns 'Talk to Andreas (need advice)'
+```
+
+## Deep Key Mapping
+
+Sometimes you might have a nested Object structure. In that case, you might want to map the parent object
+based on the contents of one of its child objects.
+
+Note: this does not work if the item at the key is an array. You will need to manually add those items using
+the `map()` function.
+
+```
+    import TrieSearch from 'trie-search';
+
+    const arr = [
+      { name: 'andrew', details: { age: 21 } },
+      { name: 'andy', details: { age: 37 } },
+      { name: 'andrea', details: { age: 25 } },
+      { name: 'annette', details: { age: 67 } }
+    ];
+
+    const trie = new TrieSearch([
       'name', // Searches `object.name`
       ['details', 'age'] // `Search object.details.age`
     ]);
 
-    ts.addAll(arr);
+    trie.addAll(arr);
 
-    ts.get('21'); // Returns 'andrew' which has age of 21
+    trie.search('21'); // Returns 'andrew' which has age of 21
+```
 
-Example 4 (options.min == 3)
-======================
+## Deep Array Mapping
 
-    var TrieSearch = require('trie-search');
+If you have an object that has a child that is an array, you might want to add that object's children. In that case, right now
+you have to manually do that.
 
-    var arr = [
-      {name: 'andrew', age: 21},
-      {name: 'andy', age: 37},
-      {name: 'andrea', age: 25},
-      {name: 'annette', age: 67}
+```
+    const TrieSearch = require('trie-search');
+
+    const people = [
+      { name: 'andrew', tags: ['fishing'] },
+      { name: 'andy', tags: ['hunting', 'poetry', 'cattle herding'] },
+      { name: 'andrea', tags: [] },
+      { name: 'annette', tags: ['poetry', 'laser tag'] }
     ];
 
-    var ts = new TrieSearch('name', {min: 3});
+    const trie = new TrieSearch(['name']);
 
-    ts.addAll(arr);
+    trie.addAll(people); // This will NOT add the tags, just the name
 
-    ts.get('a'); // Returns empty array, too short of search
-    ts.get('an'); // Returns empty array, too short of search
-    ts.get('and'); // Returns all 3 items above that begin with 'and'
-    ts.get('andr'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andre'); // Returns all 2 items above that begin with 'andr'
-    ts.get('andrew'); // Returns only andrew.
+    // Manually add the tags, one by one, using map
+    people.forEach(person => {
+      person.tags.forEach(tag => {
+        trie.map(tag, person);
+      });
+    });
+
+    ts.search('fish'); // Returns 'andrew' which has 'fishing' as a tag
+```
+
+## `options.min`
+
+Specify a minimum search length before results are returned. Keeps the Trie a little faster. Although honestly,
+the thing is so fast you probably won't need this until you get above 50,000 items or so.
+
+```
+    import TrieSearch from 'trie-search';
+
+    const people = [
+      { name: 'andrew', age: 21 },
+      { name: 'andy', age: 37 },
+      { name: 'andrea', age: 25 },
+      { name: 'annette', age: 67 }
+    ];
+
+    const trie = new TrieSearch('name', {min: 3});
+
+    trie.addAll(people);
+
+    trie.search('a');       // Returns empty array, too short of search
+    trie.search('an');      // Returns empty array, too short of search
+    trie.search('and');     // Returns all 3 items above that begin with 'and'
+    trie.search('andr');    // Returns all 2 items above that begin with 'andr'
+    trie.search('andre');   // Returns all 2 items above that begin with 'andr'
+    trie.search('andrew');  // Returns only andrew.
+```
+
+## `options.indexField = 'ix'`
+
+By default, the `HashArray` object (which `TrieSearch` uses) does not verify object uniqueness by the object itself, but instead by an index
+field (like an id field) on that object.
+
+As a result, in order for `search()` to be used with multiple words, it is important that a field is used to identify each record in the 
+TrieSearch, similar to a index in a database. If we do not specify this, a search on multiple words could return the object more than once.
+
+You can specify this using the `indexField` option:
+
+```
+    import TrieSearch from 'trie-search';
+
+    const people = [
+      { ix: 1, name: 'andrew', location: 'sweden', age: 21 },
+      { ix: 2, name: 'andrew', location: 'brussels', age: 37 },
+      { ix: 3, name: 'andrew', location: 'johnsonville', age: 25 }
+    ];
+
+    const trie = new TrieSearch('name', { min: 3, indexField: 'ix' });
+
+    trie.addAll(people);
+
+    trie.search('andrew');        // Returns all items
+    trie.search('andrew sweden'); // Returns only andrew in sweden, and only once, even though it matches both 'andrew' and 'sweden'.
+```
+
+## `search()` OR of multiple phrases
+
+```
+    import TrieSearch from 'trie-search';
+
+    const people = [
+      { name: 'andrew', age: 21, zip: 60600 },
+      { name: 'andy', age: 37, zip: 60601 },
+      { name: 'andrea', age: 25, zip: 60602 },
+      { name: 'joseph', age: 67, zip: 60603 }
+    ];
+
+    const trie = new TrieSearch(['name', 'age', 'zip']);
+
+    trie.addAll(people);
+
+    trie.search('andre'); // Returns andrew AND andrea.
+    trie.search(['andre', '25']); // Returns andrew AND andrea
+    trie.search(['andre', 'jos']); // Returns andrew AND joseph
+    trie.search(['21', '67']); // Returns andrew AND joseph
+    trie.search(['21', '60603']); // Returns andrew AND joseph
+```
+
+## `search()` AND multiple phrases custom reducer / accumulator
+
+```
+    import TrieSearch from 'trie-search';
     
-Example 5 (options.indexField = 'ix')
-======================
-
-By default, the HashArray object (which TrieSearch uses) does not - for the sake of speed - verify object uniqueness by the object itself, but instead by a field on that object.
-
-As a result, in order for `get()` to be used with multiple words, it is important that a field is used to identify each record in the TrieSearch, similar to a index in a database.
-
-    var TrieSearch = require('trie-search');
-
-    var arr = [
-      {ix: 1, name: 'andrew', location: 'sweden', age: 21},
-      {ix: 2, name: 'andrew', location: 'brussels', age: 37},
-      {ix: 3, name: 'andrew', location: 'johnsonville', age: 25}
+    const people = [
+      { name: 'andrew', age: 21, zip: 60600, id: 1 }, // person1
+      { name: 'andrew', age: 37, zip: 60601, id: 2 }, // person2
+      { name: 'andrew', age: 25, zip: 60602, id: 3 }, // person3
+      { name: 'andrew', age: 37, zip: 60603, id: 4 }  // person4
     ];
 
-    var ts = new TrieSearch('name', {min: 3, indexField: 'ix'});
-
-    ts.addAll(arr);
-
-    ts.get('andrew');        // Returns all items
-    ts.get('andrew sweden'); // Returns all items without indexField. Returns only andrew in sweden with indexField.
-
-Example 6 (get() OR of multiple phrases)
-======================
-
-    var TrieSearch = require('trie-search');
-
-    var arr = [
-      {name: 'andrew', age: 21, zip: 60600},
-      {name: 'andy', age: 37, zip: 60601},
-      {name: 'andrea', age: 25, zip: 60602},
-      {name: 'joseph', age: 67, zip: 60603}
-    ];
-
-    var ts = new TrieSearch(['name', 'age', 'zip']);
-
-    ts.addAll(arr);
-
-    ts.get('andre'); // Returns andrew AND andrea.
-    ts.get(['andre', '25']); // Returns andrew AND andrea
-    ts.get(['andre', 'jos']); // Returns andrew AND joseph
-    ts.get(['21', '67']); // Returns andrew AND joseph
-    ts.get(['21', '60603']); // Returns andrew AND joseph
-
-Example 7 (get() AND multiple phrases custom reducer / accumulator)
-======================
-
-    var TrieSearch = require('trie-search');
-    
-    var arr = [
-      {name: 'andrew', age: 21, zip: 60600, id: 1}, // person1
-      {name: 'andrew', age: 37, zip: 60601, id: 2}, // person2
-      {name: 'andrew', age: 25, zip: 60602, id: 3}, // person3
-      {name: 'andrew', age: 37, zip: 60603, id: 4}  // person4
-    ];
-
-    var ts = new TrieSearch(['name', 'age', 'zip'], {
+    const trie = new TrieSearch(['name', 'age', 'zip'], {
       idFieldOrFunction: 'id' // Required to uniquely identify during union (AND)
     });
 
-    ts.addAll(arr);
+    trie.addAll(arr);
 
-    ts.get(['andrew', '25'], TrieSearch.UNION_REDUCER); // [person3]
-    ts.get(['andrew', '50'], TrieSearch.UNION_REDUCER); // []
-    ts.get(['andrew', '37'], TrieSearch.UNION_REDUCER); // [person2, person4]
+    trie.search(['andrew', '25'], TrieSearch.UNION_REDUCER); // [person3]
+    trie.search(['andrew', '50'], TrieSearch.UNION_REDUCER); // []
+    trie.search(['andrew', '37'], TrieSearch.UNION_REDUCER); // [person2, person4]
+```
 
-Testing
-=======
+# Testing
 
+```
     $ npm i -g mocha
-
     $ mocha
 
-    START
+    ...
 
-      ․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․․
+      78 passing (45ms)
+```
 
-      73 passing (25ms)
-
-License
-=======
+# License
 
 The MIT License (MIT)
 
-Copyright (c) 2018 Joshua Jung
+Copyright (c) 2021 Joshua Jung
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

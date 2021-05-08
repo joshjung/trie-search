@@ -293,8 +293,7 @@ TrieSearch.prototype = {
     }
   },
   get: function (phrases, reducer) {
-    var self = this,
-      haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
+    var haKeyFields = this.options.indexField ? [this.options.indexField] : this.keyFields,
       ret = undefined,
       accumulator = undefined;
 
@@ -315,11 +314,10 @@ TrieSearch.prototype = {
       }
     }
 
-    if (!reducer) {
-      return ret.all;
-    }
-
-    return accumulator;
+    return !reducer ? ret.all : accumulator;
+  },
+  search: function(phrases, reducer) {
+    return this.get(phrases, reducer);
   },
   getId: function (item) {
     return typeof this.options.idFieldOrFunction === 'function' ? this.options.idFieldOrFunction(item) : item[this.options.idFieldOrFunction];
