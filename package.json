@@ -20,10 +20,7 @@
   },
   "files": [
     "src",
-    "test",
-    "index.js",
-    "performance.js",
-    "dictionary.json"
+    "index.js"
   ],
   "keywords": [
     "trie",
