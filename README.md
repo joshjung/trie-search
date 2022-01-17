@@ -35,7 +35,7 @@ remains and can still be used.
   const trie = new TrieSearch();
 
   trie.map('hello', 'world'); // Map 'hello' to the String 'world'
-  trie.map('here', 'is a trie search'); // Map 'hello' to the String 'world'
+  trie.map('here', 'is a trie search'); // Map 'here' to the String 'is a trie search'
 
   trie.search('he');    // ['world', 'is a trie search]
   trie.search('her');   // ['is a trie search]
@@ -50,7 +50,7 @@ remains and can still be used.
   var trie = new TrieSearch();
 
   trie.map('hello', 'world'); // Map 'hello' to the String 'world'
-  trie.map('here', 'is a trie search'); // Map 'hello' to the String 'world'
+  trie.map('here', 'is a trie search'); // Map 'here' to the String 'is a trie search'
 
   trie.search('he');    // ['world', 'is a trie search]
   trie.search('her');   // ['is a trie search]
@@ -106,8 +106,7 @@ Note that retrieving longer words takes less time because it has to return fewer
 
 # Data Structure
 
-Essentially, the Trie is like a single hashmap of *keys* to one or more *value objects*. You can add any number of
-keys mapping to any number of objects. A key can map to many objects (for example the word 'Josh' might map to many user objects) and many keys can map to the same object (for example 'Josh' and 'Jung' might map to the same user object). When retrieving (`get('hello')`) by an input string, the Trie returns an Array of all objects that have keys that begin with the entered key (e.g. `'hello'`).
+Essentially, the Trie is like a single hashmap of *keys* to one or more *value objects*. You can add any number of keys mapping to any number of objects. A key can map to many objects (for example the word 'Josh' might map to many user objects) and many keys can map to the same object (for example 'Josh' and 'Jung' might map to the same user object). When retrieving (`get('hello')`) by an input string, the Trie returns an Array of all objects that have keys that begin with the entered key (e.g. `'hello'`).
 
 Internally the Trie creates a tree of hashmaps for efficiency. Each hashmap is either a map between a single character in the added keys and an array of matching objects (for a leaf node) or another hashmap that is the next character in all available keys or the hash does not contain the character (no keys exist that match the requested string). This complexity is managed for you.
 
@@ -171,8 +170,8 @@ For example: `ts.map(123, new Date())` will map `(123).toString()` to a new Date
     trie.search('a');       // Returns all 4 items above.
     trie.search('an');      // Returns all 4 items above.
     trie.search('and');     // Returns all 3 items above that begin with 'and'
-    trie.search('andr');    // Returns all 2 items above that begin with 'andr'
-    trie.search('andre');   // Returns all 2 items above that begin with 'andr'
+    trie.search('andr');    // Returns the 2 items above that begin with 'andr'
+    trie.search('andre');   // Returns the 2 items above that begin with 'andr'
     trie.search('andrew');  // Returns only andrew.
 ```
 
@@ -274,11 +273,11 @@ the thing is so fast you probably won't need this until you get above 50,000 ite
 
     trie.addAll(people);
 
-    trie.search('a');       // Returns empty array, too short of search
-    trie.search('an');      // Returns empty array, too short of search
+    trie.search('a');       // Returns empty array, too short a search (< 3 minimum chars)
+    trie.search('an');      // Returns empty array, too short a search
     trie.search('and');     // Returns all 3 items above that begin with 'and'
-    trie.search('andr');    // Returns all 2 items above that begin with 'andr'
-    trie.search('andre');   // Returns all 2 items above that begin with 'andr'
+    trie.search('andr');    // Returns the 2 items above that begin with 'andr'
+    trie.search('andre');   // Returns the 2 items above that begin with 'andr'
     trie.search('andrew');  // Returns only andrew.
 ```
 
@@ -306,7 +305,7 @@ You can specify this using the `indexField` option:
     trie.addAll(people);
 
     trie.search('andrew');        // Returns all items
-    trie.search('andrew sweden'); // Returns only andrew in sweden, and only once, even though it matches both 'andrew' and 'sweden'.
+    trie.search('andrew sweden'); // Returns only the andrew who is in sweden, and only once, even though it matches both 'andrew' and 'sweden'.
 ```
 
 ## `search()` OR of multiple phrases
