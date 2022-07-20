@@ -17,7 +17,7 @@ return that result. You can customize this by providing your own `expandRegexes`
 
 # Install
 
-```
+```bash
 npm i --save trie-search
 yarn add trie-search
 ```
@@ -29,7 +29,7 @@ remains and can still be used.
 
 # Basic Usage (ES6)
 
-```
+```js
   import TrieSearch from 'trie-search';
 
   const trie = new TrieSearch();
@@ -37,15 +37,15 @@ remains and can still be used.
   trie.map('hello', 'world'); // Map 'hello' to the String 'world'
   trie.map('here', 'is a trie search'); // Map 'here' to the String 'is a trie search'
 
-  trie.search('he');    // ['world', 'is a trie search]
-  trie.search('her');   // ['is a trie search]
+  trie.search('he');    // ['world', 'is a trie search']
+  trie.search('her');   // ['is a trie search']
   trie.search('hel');   // ['world']
   trie.search('hello'); // ['world']
 ```
 
 # Basic Usage (ES5)
 
-```
+```js
   var TrieSearch = require('trie-search');
   var trie = new TrieSearch();
 
@@ -67,7 +67,7 @@ trie search.
 
 `options`: settings to provide to the TrieSearch:
 
-```
+```js
     {
       min: 1,                       // Minimum length of a key to store and search. By default this is 1,
                                     // but you might improve performance by using 2 or 3
@@ -76,7 +76,7 @@ trie search.
                                     // rows are unique when using search().
       idFieldOrFunction: undefined, // Honestly, this conflicts a bit with indexField. I need to fix that. This is only used
                                     // when using the UNION_REDUCER, explained in the Examples
-      splitOnRegEx: /\s/g           // Regular expression to split all keys into tokens.
+      splitOnRegEx: /\s/g,          // Regular expression to split all keys into tokens.
                                     // By default this is any whitespace. Set to 'false' if you have
                                     // whitespace in your keys! Set it something else to split along other boundaries.
       expandRegexes: [...]          // By default is an array of international vowels expansions, allowing
@@ -129,7 +129,7 @@ For example: `ts.map(123, new Date())` will map `(123).toString()` to a new Date
 
 ## Map Object Keys
 
-```
+```js
     import TrieSearch from 'trie-search';
 
     const peopleByName = {
@@ -153,7 +153,7 @@ For example: `ts.map(123, new Date())` will map `(123).toString()` to a new Date
 
 ## Add Array
 
-```
+```js
     import TrieSearch from 'trie-search';
 
     const people = [
@@ -177,7 +177,7 @@ For example: `ts.map(123, new Date())` will map `(123).toString()` to a new Date
 
 ## Custom Word Boundaries
 
-```
+```js
     import TrieSearch from 'trie-search';
 
     const tasks = [
@@ -205,7 +205,7 @@ based on the contents of one of its child objects.
 Note: this does not work if the item at the key is an array. You will need to manually add those items using
 the `map()` function. See `Deep Array Mapping` below for how to do that.
 
-```
+```js
     import TrieSearch from 'trie-search';
 
     const people = [
@@ -230,7 +230,7 @@ the `map()` function. See `Deep Array Mapping` below for how to do that.
 If you have an object that has a child that is an array, you might want to add that object's children. In that case, right now
 you have to manually do that.
 
-```
+```js
     const TrieSearch = require('trie-search');
 
     const people = [
@@ -259,7 +259,7 @@ you have to manually do that.
 Specify a minimum search length before results are returned. Keeps the Trie a little faster. Although honestly,
 the thing is so fast you probably won't need this until you get above 50,000 items or so.
 
-```
+```js
     import TrieSearch from 'trie-search';
 
     const people = [
@@ -291,7 +291,7 @@ TrieSearch, similar to a index in a database. If we do not specify this, a searc
 
 You can specify this using the `indexField` option:
 
-```
+```js
     import TrieSearch from 'trie-search';
 
     const people = [
@@ -310,7 +310,7 @@ You can specify this using the `indexField` option:
 
 ## `search()` OR of multiple phrases
 
-```
+```js
     import TrieSearch from 'trie-search';
 
     const people = [
@@ -333,7 +333,7 @@ You can specify this using the `indexField` option:
 
 ## `search()` AND multiple phrases custom reducer / accumulator
 
-```
+```js
     import TrieSearch from 'trie-search';
     
     const people = [
@@ -356,7 +356,7 @@ You can specify this using the `indexField` option:
 
 # Testing
 
-```
+```bash
     $ npm i -g jest
     $ npm test
 
