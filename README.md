@@ -22,10 +22,29 @@ npm i --save trie-search
 yarn add trie-search
 ```
 
-# Backwards Compatibility
+# Basic Usage (TypeScript)
 
-Note: I have added the `search(str)` function that functions identically to the old `get(str)` function. The `get(str)` function
-remains and can still be used.
+```
+  import TrieSearch from 'trie-search';
+
+  type MyType = {
+    someKey : string
+    someOtherKeyNotToBeSearched : number
+  };
+
+  const trie : TrieSearch<MyType> = new TrieSearch<MyType>('someKey');
+
+  const item1 : MyType = { someKey : 'hello world', someOtherKeyNotToBeSearched : 1 };
+  const item2 : MyType = { someKey : 'hello, I like trains', someOtherKeyNotToBeSearched : 1 };
+
+  trie.add(item1);
+  trie.add(item2);
+
+  trie.search('he');           // [item1, item2]
+  trie.search('her');          // []
+  trie.search('hel');          // [item1, item2]
+  trie.search('hello trains'); // [item2]
+```
 
 # Basic Usage (ES6)
 
@@ -57,6 +76,11 @@ remains and can still be used.
   trie.search('hel');   // ['world']
   trie.search('hello'); // ['world']
 ```
+
+# Backwards Compatibility
+
+Note: I have added the `search(str)` function that functions identically to the old `get(str)` function. The `get(str)` function
+remains and can still be used.
 
 # Setup
 
