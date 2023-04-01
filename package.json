@@ -9,7 +9,7 @@
   "homepage": "https://github.com/joshjung/trie-search",
   "email": "joshua.p.jung@gmail.com",
   "scripts": {
-    "test": "jest",
+    "test": "jest test/trie-search.test.js",
     "release:major": "npm version major && git push --follow-tags && npm publish",
     "release:minor": "npm version minor && git push --follow-tags && npm publish",
     "release:patch": "npm version patch && git push --follow-tags && npm publish"
@@ -36,6 +36,8 @@
     "hasharray": "^1.1.1"
   },
   "devDependencies": {
-    "jest": "^26.4.2"
+    "@jest/globals": "^29.5.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.5"
   }
 }

@@ -206,7 +206,7 @@ TrieSearch.prototype = {
       {
         node['value'] = node['value'] || [];
         node['value'].push(value);
-        return; 
+        return;
       }
 
       var k = keyArr.shift();
@@ -221,7 +221,7 @@ TrieSearch.prototype = {
   },
   keyToArr: function (key) {
     var keyArr;
-      
+
     if (this.options.min && this.options.min > 1)
     {
       if (key.length < this.options.min)
@@ -254,7 +254,7 @@ TrieSearch.prototype = {
   },
   _get: function (phrase, limit) {
     phrase = this.options.ignoreCase ? phrase.toLowerCase() : phrase;
-    
+
     var c, node;
     if (this.options.cache && (c = this.getCache.get(this._getCacheKey(phrase, limit))))
       return c.value;
@@ -275,7 +275,7 @@ TrieSearch.prototype = {
 
       ret = ret ? ret.intersection(temp) : temp;
     }
-    
+
     var v = ret ? ret.all : [];
 
     if (this.options.cache)
@@ -286,7 +286,7 @@ TrieSearch.prototype = {
     }
 
     return v;
-    
+
     function aggregate(node, ha) {
       if(limit && ha.all.length === limit) {
         return
@@ -336,8 +336,8 @@ TrieSearch.prototype = {
 
     return !reducer ? ret.all : accumulator;
   },
-  search: function(phrases, reducer) {
-    return this.get(phrases, reducer);
+  search: function(phrases, reducer, limit) {
+    return this.get(phrases, reducer, limit);
   },
   getId: function (item) {
     return typeof this.options.idFieldOrFunction === 'function' ? this.options.idFieldOrFunction(item) : item[this.options.idFieldOrFunction];
@@ -381,3 +381,4 @@ TrieSearch.UNION_REDUCER = function(accumulator, phrase, matches, trie) {
 };
 
 module.exports = TrieSearch;
+module.exports.default = TrieSearch;
