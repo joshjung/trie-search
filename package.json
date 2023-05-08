@@ -5,6 +5,7 @@
   "description": "A trie implementation that maps keys to objects for rapid retrieval by phrases. Most common use will be for typeahead searches.",
   "version": "1.4.1",
   "main": "index.js",
+  "types": "index.d.ts",
   "url": "https://github.com/joshjung/trie-search",
   "homepage": "https://github.com/joshjung/trie-search",
   "email": "joshua.p.jung@gmail.com",
@@ -20,6 +21,7 @@
   },
   "files": [
     "src",
+    "index.d.ts",
     "index.js"
   ],
   "keywords": [
