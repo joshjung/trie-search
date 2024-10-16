@@ -25,7 +25,7 @@ export default class TrieSearch<T> {
   constructor(keyfields? : KeyFields | null, options? : TrieSearchOptions<T>);
 
   add(item : T, customKeys? : KeyFields) : void
-  remove(phrases : string | string[], customKeys? : KeyFields) : void
+  remove(phrase : string, keyFields? : KeyFields) : void
   addAll(items : T[], customKeys? : KeyFields) : void
   reset() : void
   addFromObject(obj : any, valueField? : string) : void

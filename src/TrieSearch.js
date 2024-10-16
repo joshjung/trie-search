@@ -93,47 +93,41 @@ TrieSearch.prototype = {
       }
     }
   },
-  remove: function (value, customKeys) {
-    if (!value) return;
-    value = value.toString();
+  remove: function (phrase, keyFields) {
+    if (!phrase) return;
+    phrase = phrase.toString();
+    keyFields = keyFields || this.keyFields;
+    keyFields = keyFields instanceof Array ? keyFields : [keyFields];
 
     if (this.options.cache) this.clearCache();
 
-    if (typeof customKeys === "number") {
-      customKeys = undefined;
-    }
-
-    var keyFields = customKeys || this.keyFields;
-
-    for (var k in keyFields) {
-      var keyField = keyFields[k];
-      var expandedValues = this.expandString(value);
-        console.log('expanded', expandedValues)
-      for (var v = 0; v < expandedValues.length; v++) {
-        var expandedValue = expandedValues[v];
-        var valueArr = this.keyToArr(expandedValue);
-
-        this.removeNode(this.root, expandedValue, valueArr, 0, keyField);
+    // TODO: Refactor this, not ideal to have 3 nested loops
+    for (var keyField of keyFields) {
+      var diacriticalVariants = this.expandString(phrase);
+      for (var variant of diacriticalVariants) {
+        var words = variant.split(" ");
+        for (var word of words) {
+          this.removeNode(this.root, keyField, phrase, word, 0);
+        }
       }
     }
-
   },
-  removeNode: function (node, value, valueArr, depth, keyField) {
+  removeNode: function (node, keyField, phrase, word, depth) {
     if (!node) {
       return null;
     }
 
-    if (depth === valueArr.length) {
-      node.value = node.value.filter((item) => item[keyField] !== value);
+    if (depth === word.length) {
+      node.value = node.value.filter((item) => item[keyField] !== phrase);
       if (!node.value.length) {
-          delete node.value;
+        delete node.value;
       }
       return;
     }
 
-    var char = valueArr[depth];
+    var char = word[depth];
     if (node[char]) {
-      this.removeNode(node[char], value, valueArr, depth + 1, keyField);
+      this.removeNode(node[char], keyField, phrase, word, depth + 1);
       this.deleteNodeIfEmpty(node, char);
     }
   },

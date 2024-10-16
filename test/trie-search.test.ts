@@ -885,7 +885,7 @@ describe('TrieSearch', function() {
   });
 
   describe('TrieSearch::remove(...) should work with limits', function() {
-    it('should be able to remove an item that has no spaces', function() {
+    it('should remove an item that has no spaces', function() {
       const ts : TrieSearch<any> = new TrieSearch('keyfield');
       const keyValue = 'value';
       const item = {keyfield: keyValue};
@@ -896,5 +896,64 @@ describe('TrieSearch', function() {
       expect(ts.search(keyValue).length).toEqual(0);
     });
 
+    it('should remove an item that has spaces', function() {
+      const ts : TrieSearch<any> = new TrieSearch('keyfield');
+      const keyValue = 'value with space';
+      const item = {keyfield: keyValue};
+
+      ts.add(item);
+      expect(ts.search(keyValue).length).toEqual(1);
+      ts.remove(keyValue);
+      expect(ts.search(keyValue).length).toEqual(0);
+    });
+
+    it('should remove an item that has diacritic chars', function() {
+      const ts : TrieSearch<any> = new TrieSearch('keyfield');
+      const keyValue = 'valué';
+      const item = {keyfield: keyValue};
+
+      ts.add(item);
+      expect(ts.search(keyValue).length).toEqual(1);
+      ts.remove(keyValue);
+      expect(ts.search(keyValue).length).toEqual(0);
+    });
+
+    it('should remove an item that has diacritic chars and spaces', function() {
+      const ts : TrieSearch<any> = new TrieSearch('keyfield');
+      const keyValue = 'valué with space';
+      const item = {keyfield: keyValue};
+
+      ts.add(item);
+      expect(ts.search(keyValue).length).toEqual(1);
+      ts.remove(keyValue);
+      expect(ts.search(keyValue).length).toEqual(0);
+    });
+
+    it('should remove an item that has diacritic chars and spaces from only the specified keyfield', function() {
+      const ts : TrieSearch<any> = new TrieSearch(['keyfield1', 'keyfield2']);
+      const keyValue1 = 'valué with space';
+      const item1 = {keyfield1: keyValue1};
+      const item2 = {keyfield2: keyValue1};
+
+      ts.add(item1);
+      ts.add(item2);
+      expect(ts.search(keyValue1).length).toEqual(2);
+      ts.remove(keyValue1, 'keyfield1');
+      expect(ts.search(keyValue1).length).toEqual(1);
+    });
+
+    it('should remove an item without affecting the other closely related items', function() {
+      const ts : TrieSearch<any> = new TrieSearch('keyfield1');
+      const keyValue1 = 'valué with space';
+      const keyValue2 = 'valués with space';
+      const item1 = {keyfield1: keyValue1};
+      const item2 = {keyfield1: keyValue2};
+
+      ts.add(item1);
+      ts.add(item2);
+      expect(ts.search(keyValue1).length).toEqual(2);
+      ts.remove(keyValue1);
+      expect(ts.search(keyValue1).length).toEqual(1);
+    });
   });
 });
