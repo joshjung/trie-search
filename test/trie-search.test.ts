@@ -883,4 +883,18 @@ describe('TrieSearch', function() {
       expect(getWithLimit.length).toEqual(6)
     });
   });
+
+  describe('TrieSearch::remove(...) should work with limits', function() {
+    it('should be able to remove an item that has no spaces', function() {
+      const ts : TrieSearch<any> = new TrieSearch('keyfield');
+      const keyValue = 'value';
+      const item = {keyfield: keyValue};
+
+      ts.add(item);
+      expect(ts.search(keyValue).length).toEqual(1);
+      ts.remove(keyValue);
+      expect(ts.search(keyValue).length).toEqual(0);
+    });
+
+  });
 });

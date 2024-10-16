@@ -66,18 +66,16 @@ function deepLookup(obj, keys) {
 
 TrieSearch.prototype = {
   add: function (obj, customKeys) {
-    if (this.options.cache)
-      this.clearCache();
+    if (this.options.cache) this.clearCache();
 
     // Someone might have called add via an array forEach where the second param is a number
-    if (typeof customKeys === 'number') {
+    if (typeof customKeys === "number") {
       customKeys = undefined;
     }
 
     var keyFields = customKeys || this.keyFields;
 
-    for (var k in keyFields)
-    {
+    for (var k in keyFields) {
       var key = keyFields[k],
         isKeyArr = key instanceof Array,
         val = isKeyArr ? deepLookup(obj, key) : obj[key];
@@ -95,6 +93,56 @@ TrieSearch.prototype = {
       }
     }
   },
+  remove: function (value, customKeys) {
+    if (!value) return;
+    value = value.toString();
+
+    if (this.options.cache) this.clearCache();
+
+    if (typeof customKeys === "number") {
+      customKeys = undefined;
+    }
+
+    var keyFields = customKeys || this.keyFields;
+
+    for (var k in keyFields) {
+      var keyField = keyFields[k];
+      var expandedValues = this.expandString(value);
+        console.log('expanded', expandedValues)
+      for (var v = 0; v < expandedValues.length; v++) {
+        var expandedValue = expandedValues[v];
+        var valueArr = this.keyToArr(expandedValue);
+
+        this.removeNode(this.root, expandedValue, valueArr, 0, keyField);
+      }
+    }
+
+  },
+  removeNode: function (node, value, valueArr, depth, keyField) {
+    if (!node) {
+      return null;
+    }
+
+    if (depth === valueArr.length) {
+      node.value = node.value.filter((item) => item[keyField] !== value);
+      if (!node.value.length) {
+          delete node.value;
+      }
+      return;
+    }
+
+    var char = valueArr[depth];
+    if (node[char]) {
+      this.removeNode(node[char], value, valueArr, depth + 1, keyField);
+      this.deleteNodeIfEmpty(node, char);
+    }
+  },
+  deleteNodeIfEmpty: function (parentNode, key) {
+    if (Object.keys(parentNode[key]).length === 0) {
+      delete parentNode[key];
+      this.size--;
+    }
+  },
   /**
    * By default using the options.expandRegexes, given a string like 'ö är bra', this will expand it to:
    *
@@ -109,7 +157,7 @@ TrieSearch.prototype = {
    * @param value The string to find alternates for.
    * @returns {Array} Always returns an array even if no matches.
    */
-  expandString: function(value) {
+  expandString: function (value) {
     var values = [value];
 
     if (this.options.expandRegexes && this.options.expandRegexes.length) {
