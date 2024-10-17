@@ -101,24 +101,23 @@ TrieSearch.prototype = {
 
     if (this.options.cache) this.clearCache();
 
-    // TODO: Refactor this, not ideal to have 3 nested loops
-    for (var keyField of keyFields) {
-      var diacriticalVariants = this.expandString(phrase);
-      for (var variant of diacriticalVariants) {
-        var words = variant.split(" ");
-        for (var word of words) {
-          this.removeNode(this.root, keyField, phrase, word);
-        }
+    var diacriticalVariants = this.expandString(phrase);
+    for (var variant of diacriticalVariants) {
+      var words = variant.split(" ");
+      for (var word of words) {
+        this.removeNode(this.root, keyFields, phrase, word);
       }
     }
   },
-  removeNode: function (node, keyField, phrase, word) {
+  removeNode: function (node, keyFields, phrase, word) {
     if (!node) {
       return null;
     }
 
     if (!word.length) {
-      node.value = node.value.filter((item) => item[keyField] !== phrase);
+      node.value = node.value.filter(
+        (item) => !keyFields.some((key) => item[key] === phrase),
+      );
       if (!node.value.length) {
         delete node.value;
       }
@@ -127,7 +126,7 @@ TrieSearch.prototype = {
 
     var char = word[0];
     if (node[char]) {
-      this.removeNode(node[char], keyField, phrase, word.slice(1));
+      this.removeNode(node[char], keyFields, phrase, word.slice(1));
       this.deleteNodeIfEmpty(node, char);
     }
   },
