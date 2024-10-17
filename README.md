@@ -44,6 +44,8 @@ yarn add trie-search
   trie.search('her');          // []
   trie.search('hel');          // [item1, item2]
   trie.search('hello trains'); // [item2]
+  trie.remove('hello world');
+  trie.search('hel');          // [item2]
 ```
 
 # Basic Usage (ES6)
@@ -385,9 +387,9 @@ You can specify this using the `indexField` option:
     $ npm test
 
     Test Suites: 1 passed, 1 total
-    Tests:       81 passed, 81 total
+    Tests:       87 passed, 87 total
     Snapshots:   0 total
-    Time:        1.754 s
+    Time:        0.338 s, estimated 1 s
 ```
 
 # Contributing
