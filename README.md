@@ -15,6 +15,8 @@ By default, sentences/words are split along whitespace boundaries. For example, 
 By default, the trie-search is now internationalized for a common set of vowels. So if you insert 'ö', then searching on 'o' will
 return that result. You can customize this by providing your own `expandRegexes` object.
 
+There is also a `remove(str: string)` method that will remove every node that has the exact `str` string passed as an argument, as well as the corresponding diacritic variants. This method also works for strings that have multiple words separated by spaces.
+
 # Install
 
 ```
@@ -379,6 +381,23 @@ You can specify this using the `indexField` option:
     trie.search(['andrew', '50'], TrieSearch.UNION_REDUCER); // []
     trie.search(['andrew', '37'], TrieSearch.UNION_REDUCER); // [person2, person4]
 ```
+
+## `remove()`
+```
+    import TrieSearch from 'trie-search';
+
+    const trie : TrieSearch<any> = new TrieSearch(['keyfield1', 'keyfield2']);
+    const keyValue = 'value';
+    const item1 = {keyfield1: keyValue};
+    const item2 = {keyfield2: keyValue};
+
+    trie.add(item1);
+    trie.add(item2);
+    trie.search(keyValue);              // [item1, item2]
+    trie.remove(keyValue, 'keyfield1');
+    trie.search(keyValue);              // [item2]
+```
+
 
 # Testing
 
