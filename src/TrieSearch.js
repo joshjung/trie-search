@@ -107,17 +107,17 @@ TrieSearch.prototype = {
       for (var variant of diacriticalVariants) {
         var words = variant.split(" ");
         for (var word of words) {
-          this.removeNode(this.root, keyField, phrase, word, 0);
+          this.removeNode(this.root, keyField, phrase, word);
         }
       }
     }
   },
-  removeNode: function (node, keyField, phrase, word, depth) {
+  removeNode: function (node, keyField, phrase, word) {
     if (!node) {
       return null;
     }
 
-    if (depth === word.length) {
+    if (!word.length) {
       node.value = node.value.filter((item) => item[keyField] !== phrase);
       if (!node.value.length) {
         delete node.value;
@@ -125,9 +125,9 @@ TrieSearch.prototype = {
       return;
     }
 
-    var char = word[depth];
+    var char = word[0];
     if (node[char]) {
-      this.removeNode(node[char], keyField, phrase, word, depth + 1);
+      this.removeNode(node[char], keyField, phrase, word.slice(1));
       this.deleteNodeIfEmpty(node, char);
     }
   },
