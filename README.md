@@ -15,6 +15,8 @@ By default, sentences/words are split along whitespace boundaries. For example, 
 By default, the trie-search is now internationalized for a common set of vowels. So if you insert 'ö', then searching on 'o' will
 return that result. You can customize this by providing your own `expandRegexes` object.
 
+There is also a `remove(str: string)` method that will remove every node that has the exact `str` string passed as an argument, as well as the corresponding diacritic variants. This method also works for strings that have multiple words separated by spaces.
+
 # Install
 
 ```
@@ -44,6 +46,8 @@ yarn add trie-search
   trie.search('her');          // []
   trie.search('hel');          // [item1, item2]
   trie.search('hello trains'); // [item2]
+  trie.remove('hello world');
+  trie.search('hel');          // [item2]
 ```
 
 # Basic Usage (ES6)
@@ -378,6 +382,23 @@ You can specify this using the `indexField` option:
     trie.search(['andrew', '37'], TrieSearch.UNION_REDUCER); // [person2, person4]
 ```
 
+## `remove()`
+```
+    import TrieSearch from 'trie-search';
+
+    const trie : TrieSearch<any> = new TrieSearch(['keyfield1', 'keyfield2']);
+    const keyValue = 'value';
+    const item1 = {keyfield1: keyValue};
+    const item2 = {keyfield2: keyValue};
+
+    trie.add(item1);
+    trie.add(item2);
+    trie.search(keyValue);              // [item1, item2]
+    trie.remove(keyValue, 'keyfield1');
+    trie.search(keyValue);              // [item2]
+```
+
+
 # Testing
 
 ```
@@ -385,9 +406,9 @@ You can specify this using the `indexField` option:
     $ npm test
 
     Test Suites: 1 passed, 1 total
-    Tests:       81 passed, 81 total
+    Tests:       87 passed, 87 total
     Snapshots:   0 total
-    Time:        1.754 s
+    Time:        0.338 s, estimated 1 s
 ```
 
 # Contributing

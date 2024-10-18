@@ -66,18 +66,16 @@ function deepLookup(obj, keys) {
 
 TrieSearch.prototype = {
   add: function (obj, customKeys) {
-    if (this.options.cache)
-      this.clearCache();
+    if (this.options.cache) this.clearCache();
 
     // Someone might have called add via an array forEach where the second param is a number
-    if (typeof customKeys === 'number') {
+    if (typeof customKeys === "number") {
       customKeys = undefined;
     }
 
     var keyFields = customKeys || this.keyFields;
 
-    for (var k in keyFields)
-    {
+    for (var k in keyFields) {
       var key = keyFields[k],
         isKeyArr = key instanceof Array,
         val = isKeyArr ? deepLookup(obj, key) : obj[key];
@@ -95,6 +93,49 @@ TrieSearch.prototype = {
       }
     }
   },
+  remove: function (phrase, keyFields) {
+    if (!phrase) return;
+    phrase = phrase.toString();
+    keyFields = keyFields || this.keyFields;
+    keyFields = keyFields instanceof Array ? keyFields : [keyFields];
+
+    if (this.options.cache) this.clearCache();
+
+    var diacriticalVariants = this.expandString(phrase);
+    for (var variant of diacriticalVariants) {
+      var words = variant.split(" ");
+      for (var word of words) {
+        this.removeNode(this.root, keyFields, phrase, word);
+      }
+    }
+  },
+  removeNode: function (node, keyFields, phrase, word) {
+    if (!node) {
+      return null;
+    }
+
+    if (!word.length) {
+      node.value = node.value.filter(
+        (item) => !keyFields.some((key) => item[key] === phrase),
+      );
+      if (!node.value.length) {
+        delete node.value;
+      }
+      return;
+    }
+
+    var char = word[0];
+    if (node[char]) {
+      this.removeNode(node[char], keyFields, phrase, word.slice(1));
+      this.deleteNodeIfEmpty(node, char);
+    }
+  },
+  deleteNodeIfEmpty: function (parentNode, key) {
+    if (Object.keys(parentNode[key]).length === 0) {
+      delete parentNode[key];
+      this.size--;
+    }
+  },
   /**
    * By default using the options.expandRegexes, given a string like 'ö är bra', this will expand it to:
    *
@@ -109,7 +150,7 @@ TrieSearch.prototype = {
    * @param value The string to find alternates for.
    * @returns {Array} Always returns an array even if no matches.
    */
-  expandString: function(value) {
+  expandString: function (value) {
     var values = [value];
 
     if (this.options.expandRegexes && this.options.expandRegexes.length) {
