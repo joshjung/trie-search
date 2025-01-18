@@ -955,5 +955,35 @@ describe('TrieSearch', function() {
       ts.remove(keyValue1);
       expect(ts.search(keyValue1).length).toEqual(1);
     });
+
+    it('should remove item if ignoreCase is true and capitalized letters are present', function () {
+      type Item = {
+        key: string
+      }
+      const ts: TrieSearch<any> = new TrieSearch<any>(['key'], {
+          ignoreCase: true,
+        }),
+        item: Item = {key: 'John'};
+
+      ts.add(item)
+      expect(ts.get(item.key)[0]).toBe(item);
+      ts.remove(item.key);
+      expect(ts.get(item.key).length).toBe(0);
+    });
+
+    it('should remove a similar item if only uppercase/lowercase are changed', function () {
+      type Item = {
+        key: string
+      }
+      const ts: TrieSearch<any> = new TrieSearch<any>(['key'], {
+          ignoreCase: true,
+        }),
+        item: Item = {key: 'John'};
+
+      ts.add(item)
+      expect(ts.get(item.key)[0]).toBe(item);
+      ts.remove(item.key.toLowerCase());
+      expect(ts.get(item.key).length).toBe(0);
+    });
   });
 });

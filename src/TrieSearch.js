@@ -83,6 +83,9 @@ TrieSearch.prototype = {
       if (!val) continue;
 
       val = val.toString();
+      if (this.options.ignoreCase) {
+        val = val.toLowerCase();
+      }
 
       var expandedValues = this.expandString(val);
 
@@ -96,6 +99,10 @@ TrieSearch.prototype = {
   remove: function (phrase, keyFields) {
     if (!phrase) return;
     phrase = phrase.toString();
+    if (this.options.ignoreCase) {
+      phrase = phrase.toLowerCase();
+    }
+
     keyFields = keyFields || this.keyFields;
     keyFields = keyFields instanceof Array ? keyFields : [keyFields];
 
@@ -116,7 +123,10 @@ TrieSearch.prototype = {
 
     if (!word.length) {
       node.value = node.value.filter(
-        (item) => !keyFields.some((key) => item[key] === phrase),
+          (item) => !keyFields.some((key) => {
+            var toCompare = this.options.ignoreCase ? item[key].toLowerCase() : item[key];
+            return toCompare === phrase
+          }),
       );
       if (!node.value.length) {
         delete node.value;
