@@ -18,12 +18,14 @@ describe('TrieSearch', function() {
     it('should be able to call map() and search()', function() {
       const ts : TrieSearch<any> = new TrieSearch<any>();
 
-      ts.map('hello', 'world');
+      const item = { value: 'world' };
+
+      ts.map('hello', item);
 
       expect(ts.search('hel').length).toEqual(1);
       expect(ts.search('hell').length).toEqual(1);
       expect(ts.search('hello').length).toEqual(1);
-      expect(ts.search('hel')[0]).toEqual('world');
+      expect(ts.search('hel')[0]).toStrictEqual(item);
     });
   });
 
@@ -189,7 +191,7 @@ describe('TrieSearch', function() {
     });
   });
 
-  describe('TrieSearch::get(...) should work for multiple keys and union the result', function() {
+  describe('TrieSearch::get(...) should work for multiple keys and OR the result when the search field contains multiple words', function() {
     type Item = {
       key : string
     }
@@ -205,11 +207,11 @@ describe('TrieSearch', function() {
     ts.add(item3);
     ts.add(item4);
 
-    it('get(\'the quick\') should return all entries', function() {
+    it('get(\'the quick\') should return the first three entries only', function() {
       expect(ts.get('the quick').length).toEqual(3);
     });
 
-    it('get(\'the brown\') should return 2 entries', function() {
+    it('get(\'the brown\') should return 2 items only', function() {
       expect(ts.get('the brown').length).toEqual(2);
     });
 
@@ -239,12 +241,72 @@ describe('TrieSearch', function() {
     });
   });
 
+  describe('TrieSearch::get(...) should by default AND the results across a single key', function() {
+    const ts : TrieSearch<any> = new TrieSearch<any>(['key']),
+      item1 : any = {key: 'guadalupe mountains national park'},
+      item2 : any = {key: 'guadalupe island'},
+      item3 : any = {key: 'city of guadalupe'},
+      item4 : any = {key: 'big bend national park'};
+
+    ts.add(item1);
+    ts.add(item2);
+    ts.add(item3);
+    ts.add(item4);
+
+    it('get(\'guadalupe park\') should the first entry only', function() {
+      expect(ts.get('guadalupe park').length).toEqual(1);
+      expect(ts.get('guadalupe park').indexOf(item1)).toBeGreaterThan(-1);
+    });
+
+    it('get(\'national park\') should return the national park ones', function() {
+      expect(ts.get('national park').length).toEqual(2);
+      expect(ts.get('national park').indexOf(item1)).toBeGreaterThan(-1);
+      expect(ts.get('national park').indexOf(item4)).toBeGreaterThan(-1);
+    });
+  });
+
+  describe('TrieSearch::get(...) should by default AND the results across multiple keys', function() {
+    const ts : TrieSearch<any> = new TrieSearch<any>(['name', 'type']),
+      item1 : any = {
+        name: 'guadalupe mountains',
+        type: 'national park'
+      },
+      item2 : any = {
+        name: 'guadalupe',
+        type: 'island'
+      },
+      item3 : any = {
+        name: 'city of guadalupe',
+        type: 'city'
+      },
+      item4 : any = {
+        name: 'big bend',
+        type: 'national park'
+      };
+
+    ts.add(item1);
+    ts.add(item2);
+    ts.add(item3);
+    ts.add(item4);
+
+    it('get(\'guadalupe park\') should the first entry only', function() {
+      expect(ts.get('guadalupe park').length).toEqual(1);
+      expect(ts.get('guadalupe park').indexOf(item1)).toBeGreaterThan(-1);
+    });
+
+    it('get(\'national park\') should return the national park ones', function() {
+      expect(ts.get('national park').length).toEqual(2);
+      expect(ts.get('national park').indexOf(item1)).toBeGreaterThan(-1);
+      expect(ts.get('national park').indexOf(item4)).toBeGreaterThan(-1);
+    });
+  });
+
   describe('TrieSearch::get(...) should work for array of phrases', function() {
     type Item = {
       key : string
     }
 
-    const ts : TrieSearch<Item> = new TrieSearch<Item>('key', {min: 2}),
+    const ts : TrieSearch<Item> = new TrieSearch<Item>('key'),
       item1 = {key: 'the quick brown fox'},
       item2 = {key: 'the quick brown'},
       item3 = {key: 'the quick fox'},
@@ -255,8 +317,12 @@ describe('TrieSearch', function() {
     ts.add(item3);
     ts.add(item4);
 
-    it('get([\'the brown\', \'quick\']) should return 3 entries', function() {
-      expect(ts.get(['the brown', 'quick']).length).toEqual(3);
+    it('get([\'the\', \'brown\', \'quick\']) should return 0 entries', function() {
+      expect(ts.get(['the', 'brown', 'quick']).length).toEqual(2);
+    });
+
+    it('get([\'the brown\', \'quick\']) should return 0 entries', function() {
+      expect(ts.get(['the brown', 'quick']).length).toEqual(0);
     });
   });
 
@@ -573,7 +639,7 @@ describe('TrieSearch', function() {
       customKey2 : string
     }
 
-    const ts : TrieSearch<Item> = new TrieSearch<Item>('key', {min: 2}),
+    const ts : TrieSearch<Item> = new TrieSearch<Item>('this_key_does_not_matter', { min: 2 }),
       item1 = {customKey1: 'I am item1!', customKey2: '123'},
       item2 = {customKey1: 'I am item2!', customKey2: '456'};
 
@@ -593,6 +659,10 @@ describe('TrieSearch', function() {
 
     it('get(\'i\') should return 0 items', function() {
       expect(ts.get('i').length).toEqual(0);
+    });
+
+    it('get(\'item\') should return both items', function() {
+      console.log(JSON.stringify(ts.root, null, 2));
       expect(ts.get('item').length).toEqual(2);
     });
 
@@ -631,8 +701,8 @@ describe('TrieSearch', function() {
         expect(_accumulator).toBeUndefined();
         expect(phrase).toEqual('robin');
         expect(phraseMatches.length).toEqual(2);
-        expect(phraseMatches[0]).toBe(item5)
-        expect(phraseMatches[1]).toBe(item1)
+        expect(phraseMatches[0]).toBe(item1)
+        expect(phraseMatches[1]).toBe(item5)
         expect(trie).toBe(ts);
 
         _accumulator = _accumulator || [];
@@ -643,8 +713,8 @@ describe('TrieSearch', function() {
       });
 
       expect(result.length).toEqual(2);
-      expect(result[0]).toBe(item1);
-      expect(result[1]).toBe(item5);
+      expect(result[0]).toBe(item5);
+      expect(result[1]).toBe(item1);
     });
 
     it('get([\'red\', \'robin\'], TrieSearch.UNION_REDUCER)', function() {
@@ -690,6 +760,76 @@ describe('TrieSearch', function() {
 
     it('get([\'owl\', \'card\', \'cock\', \'rob\', \'fubar\'], TrieSearch.UNION_REDUCER)', function() {
       let result = ts.get(['owl', 'card', 'cock', 'rob', 'fubar'], TrieSearch.UNION_REDUCER);
+
+      expect(result.length).toEqual(0);
+    });
+  });
+
+  describe('TrieSearch::get(...) should work with a default reducer', function() {
+    type Item = {
+      key : string
+    }
+
+    const ts : TrieSearch<Item> = new TrieSearch<Item>('key', {
+        min: 2,
+        defaultReducer: TrieSearch.UNION_REDUCER,
+        idFieldOrFunction: 'key'
+      }),
+      item1 = {key: 'I am red robin!'},
+      item2 = {key: 'I am red cockatiel!'},
+      item3 = {key: 'I am green cardinal!'},
+      item4 = {key: 'I am green owl!'},
+      item5 = {key: 'robin cockatiel cardinal owl!'};
+
+    ts.add(item1);
+    ts.add(item2);
+    ts.add(item3);
+    ts.add(item4);
+    ts.add(item5);
+
+    it('get([\'red\', \'robin\'], TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get(['red', 'robin']);
+
+      expect(result.length).not.toEqual(0);
+      expect(result[0]).toBe(item1);
+    });
+
+    it('get([\'green\'], TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get(['green']);
+
+      expect(result.length).toEqual(2);
+      expect(result[0]).toBe(item3);
+      expect(result[1]).toBe(item4);
+    });
+
+    it('get(\'green\', TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get('green');
+
+      expect(result.length).toEqual(2);
+      expect(result[0]).toBe(item3);
+      expect(result[1]).toBe(item4);
+    });
+
+    it('get(\'blue\', TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get('blue');
+
+      expect(result.length).toEqual(0)
+    });
+
+    it('get(\'am\', TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get('am');
+
+      expect(result.length).toEqual(4);
+    });
+
+    it('get([\'owl\', \'card\', \'cock\', \'rob\'], TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get(['owl', 'card', 'cock', 'rob']);
+
+      expect(result.length).toEqual(1);
+    });
+
+    it('get([\'owl\', \'card\', \'cock\', \'rob\', \'fubar\'], TrieSearch.UNION_REDUCER)', function() {
+      let result = ts.get(['owl', 'card', 'cock', 'rob', 'fubar']);
 
       expect(result.length).toEqual(0);
     });
@@ -787,7 +927,7 @@ describe('TrieSearch', function() {
             splitOnRegEx: /([.\-\s']|(?=[A-Z]))/,
             splitOnGetRegEx: false,
           }),
-          item = {someValue: 12345};
+          item = {key: 12345};
 
         ts.map('This IsSome.Phrase-Whatever', item);
       }).not.toThrowError();
@@ -799,8 +939,8 @@ describe('TrieSearch', function() {
           splitOnGetRegEx: false,
           insertFullUnsplitKey: true
         }),
-        item = {someValue: 12345},
-        item2 = {someValue: 67890};
+        item = {key: 12345},
+        item2 = {key: 67890};
 
       ts.map('It\'sOnlyA_Flesh Wound', item);
       ts.map('WhatIsYourFavoriteColor', item2);
@@ -823,12 +963,12 @@ describe('TrieSearch', function() {
     });
 
     it('should match capital letter breaks', function() {
-      const ts : TrieSearch<any> = new TrieSearch('someValue', {
+      const ts : TrieSearch<any> = new TrieSearch('key', {
           splitOnRegEx: /([.\-\s'_]|(?=[A-Z]))/,
           splitOnGetRegEx: /[\s]/
         }),
-        item = {someValue: 12345},
-        item2 = {someValue: 67890};
+        item = {key: 12345},
+        item2 = {key: 67890};
 
       ts.map('WhatIsYourFavoriteColor', item2);
 
@@ -837,11 +977,11 @@ describe('TrieSearch', function() {
     });
 
     it('should split on various other word breaks', function() {
-      const ts : TrieSearch<any> = new TrieSearch<any>('someValue', {
+      const ts : TrieSearch<any> = new TrieSearch<any>('key', {
           splitOnRegEx: /[\s\/\(\)]/
         }),
-        item = {someValue: 12345},
-        item2 = {someValue: 67890};
+        item = {key: 12345},
+        item2 = {key: 67890};
 
       ts.map('Hello/World', item);
       ts.map("What's(Up)", item2);
@@ -932,8 +1072,8 @@ describe('TrieSearch', function() {
     it('should remove an item that has diacritic chars and spaces from only the specified keyfield', function() {
       const ts : TrieSearch<any> = new TrieSearch(['keyfield1', 'keyfield2']);
       const keyValue1 = 'valué with space';
-      const item1 = {keyfield1: keyValue1};
-      const item2 = {keyfield2: keyValue1};
+      const item1 = {keyfield1: keyValue1, keyfield2: 'nothing'};
+      const item2 = {keyfield2: keyValue1, keyfield1: 'nothing'};
 
       ts.add(item1);
       ts.add(item2);
@@ -984,6 +1124,36 @@ describe('TrieSearch', function() {
       expect(ts.get(item.key)[0]).toBe(item);
       ts.remove(item.key.toLowerCase());
       expect(ts.get(item.key).length).toBe(0);
+    });
+  });
+
+  describe('Documentation examples should work', function() {
+    it('TypeScript example should output what we say it does', function() {
+      type MyType = {
+        someKey : string
+        someOtherKeyNotToBeSearched : number
+      };
+
+      const trie : TrieSearch<MyType> = new TrieSearch<MyType>('someKey');
+
+      const item1 : MyType = { someKey : 'hello world', someOtherKeyNotToBeSearched : 1 };
+      const item2 : MyType = { someKey : 'hello, I like trains', someOtherKeyNotToBeSearched : 1 };
+
+      trie.add(item1);
+      trie.add(item2);
+
+      expect(trie.search('he').length).toEqual(2);           // [item1, item2]
+      expect(trie.search('her').length).toEqual(0);          // []
+      expect(trie.search('hel wor').length).toEqual(1);      // [item1]
+      expect(trie.search('hel wor')[0]).toStrictEqual(item1);// [item1]
+      expect(trie.search('hel').length).toEqual(2);          // [item1, item2]
+
+      // Remove things!
+      trie.remove('hello world');  // item1 is now gone
+      expect(trie.search('hello')[0]).toStrictEqual(item2);  // [item2]
+      expect(trie.search('world').length).toEqual(0);  // []
+      trie.remove('trains'); // item2 is now gone
+      expect(trie.search('trains').length).toEqual(0);        // []
     });
   });
 });

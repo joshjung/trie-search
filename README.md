@@ -1,5 +1,7 @@
 ![](https://nodei.co/npm/trie-search.png?downloads=True&stars=True)
 
+> Important! 2.2.0 introduces breaking changes. See Release Notes below.
+
 # Trie-Search
 
 A Trie is a data structure designed for quick reTRIEval of objects by string search. This was designed for use with a
@@ -15,7 +17,8 @@ By default, sentences/words are split along whitespace boundaries. For example, 
 By default, the trie-search is now internationalized for a common set of vowels. So if you insert 'ö', then searching on 'o' will
 return that result. You can customize this by providing your own `expandRegexes` object.
 
-There is also a `remove(str: string)` method that will remove every node that has the exact `str` string passed as an argument, as well as the corresponding diacritic variants. This method also works for strings that have multiple words separated by spaces.
+There is also a `remove(str: string)` method that will remove every node that has the exact `str` string passed as an argument, as 
+well as the corresponding diacritic variants. This method also works for strings that have multiple words separated by spaces.
 
 # Install
 
@@ -39,98 +42,86 @@ yarn add trie-search
   const item1 : MyType = { someKey : 'hello world', someOtherKeyNotToBeSearched : 1 };
   const item2 : MyType = { someKey : 'hello, I like trains', someOtherKeyNotToBeSearched : 1 };
 
+  // Add and index items one at a time
   trie.add(item1);
   trie.add(item2);
 
+  // Search!
   trie.search('he');           // [item1, item2]
   trie.search('her');          // []
+  trie.search('hel wor');      // [item1]
   trie.search('hel');          // [item1, item2]
-  trie.search('hello trains'); // [item2]
-  trie.remove('hello world');
-  trie.search('hel');          // [item2]
+
+  // Remove things for specific words
+  trie.remove('hello world');  // item1 is now removed ONLY for the search for 'hello' or 'world'
+  trie.search('hello');        // [item2]
+  trie.search('world');        // []
+  trie.remove('trains');       // item2 is now gone ONLY for the search for 'trains'
+  trie.search('trains');       // []
+  
 ```
 
-# Basic Usage (ES6)
+# Usage (ES6 `import`)
 
 ```
   import TrieSearch from 'trie-search';
 
   const trie = new TrieSearch();
 
-  trie.map('hello', 'world'); // Map 'hello' to the String 'world'
-  trie.map('here', 'is a trie search'); // Map 'here' to the String 'is a trie search'
+  // You can explicitly map strings to objects
+  trie.map('hello', { value: 'world' }); // Map 'hello' to an Object
+  trie.map('here', { value: 'is a trie search' }); // Map 'here' to a different Object
 
-  trie.search('he');    // ['world', 'is a trie search]
-  trie.search('her');   // ['is a trie search]
-  trie.search('hel');   // ['world']
-  trie.search('hello'); // ['world']
+  trie.search('he');    // [{ value: 'world' }, { value: 'is a trie search' }]
+  trie.search('her');   // [{ value: 'is a trie search' }]
+  trie.search('hel');   // [{ value: 'world' }]
+  trie.search('hello'); // [{ value: 'world' }]
 ```
 
-# Basic Usage (ES5)
+# Construction
 
-```
-  var TrieSearch = require('trie-search');
-  var trie = new TrieSearch();
+`new TrieSearch(keyFields, options)`
 
-  trie.map('hello', 'world'); // Map 'hello' to the String 'world'
-  trie.map('here', 'is a trie search'); // Map 'here' to the String 'is a trie search'
-
-  trie.search('he');    // ['world', 'is a trie search]
-  trie.search('her');   // ['is a trie search]
-  trie.search('hel');   // ['world']
-  trie.search('hello'); // ['world']
-```
-
-# Backwards Compatibility
-
-Note: I have added the `search(str)` function that functions identically to the old `get(str)` function. The `get(str)` function
-remains and can still be used.
-
-# Setup
-
-**`new TrieSearch(keyFields, options)`**
+## Options
 
 `keyFields`: a single string or an array of strings/arrays representing what fields on added objects are to be used as keys for the
 trie search.
 
 `options`: settings to provide to the TrieSearch:
 
-```
-    {
-      min: 1,                       // Minimum length of a key to store and search. By default this is 1,
-                                    // but you might improve performance by using 2 or 3
-      ignoreCase: true,             // Self-explanatory
-      indexField: undefined,        // Defaults to undefined. If specified, determines which
-                                    // rows are unique when using search().
-      idFieldOrFunction: undefined, // Honestly, this conflicts a bit with indexField. I need to fix that. This is only used
-                                    // when using the UNION_REDUCER, explained in the Examples
-      splitOnRegEx: /\s/g           // Regular expression to split all keys into tokens.
-                                    // By default this is any whitespace. Set to 'false' if you have
-                                    // whitespace in your keys! Set it something else to split along other boundaries.
-      expandRegexes: [...]          // By default is an array of international vowels expansions, allowing
-                                    // searches for vowels like 'a' to return matches on 'å' or 'ä' etc.
-                                    // Set this to an empty array (`[]`) if you want to disable it. Dee top of src/TrieSearch.js 
-                                    // file for examples.
-    }
-```
+`options.min`: Minimum length of a key to store and search. By default this is 1
 
-# Performance
+`options.ingoreCase`: Ignore case of characters when searching
 
-You can test performance yourself using the `node performance.js` process included in the package. Testing on my 2015 Mac Pro with 2.5 GHZ
-I get these results:
+`idFieldOrFunction`: Used to determine a unique string id for each inserted item, especially used by the reducer. By
+default this is a function that uses the provided keyFields to build up an md5 unique id that is stored on each item
+in the `$tsid` field. Obviously if you don't want this functionality just provide a string key field or a function.
 
-```
-English Dictionary loaded from JSON. Word count:  86036
-Memory before index: 55.73046875 MB
-Dictionary inserted and indexed into TrieSearch in  484  ms.
-Trie Node Count:  280206
-Trie Memory Used: 34.78515625 MB
-Retrieved "a" items ( 6125 ) in  25  ms.
-Retrieved "andr" items ( 17 ) in  5  ms.
-Retrieved "android" items ( 1 ) in  0  ms.
-```
+`splitOnRegEx`: Regular Expression to split all keys into tokens. By default this is any whitespace or punctuation. 
+Set to 'false' if you want to never split string values! Set it to a regular expression to split along other boundaries.
+Default regular expression is now `/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g`.
 
-Note that retrieving longer words takes less time because it has to return fewer results.
+`splitOnGetRegEx`: When performing a `search(...)` (formerly called a `get(...)`) this Regular Expression is run on the
+search phrase to split it into sub-phrases that are individually searched and then their resulting match arrays are
+reduced via the `defaultReducer` to return the final array result of matched items. By default this is set to be
+identical to whatever value is in `splitOnRegEx`.
+
+`expandRegexes`: By default is an array of international vowels expansions, allowing searches for vowels like 'a' to 
+return matches on 'å' or 'ä' etc. Set this to an empty array (`[]`) if you want to disable it. See top of `src/TrieSearch.js`
+file for examples.
+
+`defaultReducer`: When doing a `search`, if you provide more than one word or phrase the internal engine performs more
+than one lookup, once for each word. This produces multiple arrays that then need to be reduced to a single array. The
+default is `TrieSearch.UNION_REDUCER` which only returns the union of all of the search matched arrays, effectively
+performing an "AND" on every word. This can be used if you want to do a custom sort on the returned search results, for
+example if you wanted to do some post-processing to figure out which items most closely matched and have those at the
+top. By default no sorting of search results is provided, but this is where you could do it.
+
+`maxCacheSize`: By default, when you do a `search(...)` an internal cache remembers each search phrase and maps it to its
+results, for faster lookup next time the same phrase is searched. This is the maximum number of phrases to cache. Defaults
+to `1024`.
+
+`cache`: Set to `false` to turn off the internal caching mechanism for `search(...)` calls. Default is `true`.
 
 # Data Structure
 
@@ -204,6 +195,8 @@ For example: `ts.map(123, new Date())` will map `(123).toString()` to a new Date
 ```
 
 ## Custom Word Boundaries
+
+The default is to split words on whitespace and the usual punctuation (`/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g`):
 
 ```
     import TrieSearch from 'trie-search';
@@ -309,26 +302,31 @@ the thing is so fast you probably won't need this until you get above 50,000 ite
     trie.search('andrew');  // Returns only andrew.
 ```
 
-## `options.indexField = 'ix'`
+## `options.idFieldOrFunction = ...`
 
-By default, the `HashArray` object (which `TrieSearch` uses) does not verify object uniqueness by the object itself, but instead by an index
-field (like an id field) on that object.
+By default, TrieSearch does not verify object uniqueness by the object itself, but instead by an index field on that 
+object which is assumed to be unique. 
 
-As a result, in order for `search()` to be used with multiple words, it is important that a field is used to identify each record in the 
-TrieSearch, similar to a index in a database. If we do not specify this, a search on multiple words could return the object more than once.
+When `search(...)` is passed multiple words, it splits them up and does multiple internal searches and then has to
+reduce the multiple arrays back into one final resulting array. But in this process, it needs to know which items
+are duplicates, and so it needs to be able eto know what each items unique id is.
 
-You can specify this using the `indexField` option:
+By default, `TrieSearch` tries to generate a unique id for each item and cache it via the `$tsid` field.
+
+You might not want this!
+
+You can customize this behavior via the `idFieldOrFunction`, like so:
 
 ```
     import TrieSearch from 'trie-search';
 
     const people = [
-      { ix: 1, name: 'andrew', location: 'sweden', age: 21 },
-      { ix: 2, name: 'andrew', location: 'brussels', age: 37 },
-      { ix: 3, name: 'andrew', location: 'johnsonville', age: 25 }
+      { id: 1, name: 'andrew', location: 'sweden', age: 21 },
+      { id: 2, name: 'andrew', location: 'brussels', age: 37 },
+      { id: 3, name: 'andrew', location: 'johnsonville', age: 25 }
     ];
 
-    const trie = new TrieSearch('name', { min: 3, indexField: 'ix' });
+    const trie = new TrieSearch('name', { min: 3, idFieldOrFunction: 'id' });
 
     trie.addAll(people);
 
@@ -336,79 +334,42 @@ You can specify this using the `indexField` option:
     trie.search('andrew sweden'); // Returns only the andrew who is in sweden, and only once, even though it matches both 'andrew' and 'sweden'.
 ```
 
-## `search()` OR of multiple phrases
+Or with a function like this:
 
 ```
-    import TrieSearch from 'trie-search';
-
-    const people = [
-      { name: 'andrew', age: 21, zip: 60600 },
-      { name: 'andy', age: 37, zip: 60601 },
-      { name: 'andrea', age: 25, zip: 60602 },
-      { name: 'joseph', age: 67, zip: 60603 }
-    ];
-
-    const trie = new TrieSearch(['name', 'age', 'zip']);
-
-    trie.addAll(people);
-
-    trie.search('andre'); // Returns andrew AND andrea.
-    trie.search(['andre', '25']); // Returns andrew AND andrea
-    trie.search(['andre', 'jos']); // Returns andrew AND joseph
-    trie.search(['21', '67']); // Returns andrew AND joseph
-    trie.search(['21', '60603']); // Returns andrew AND joseph
+    new TrieSearch('name', { min: 3, idFieldOrFunction: item => item.id });
 ```
 
-## `search()` AND multiple phrases custom reducer / accumulator
+# Performance
+
+You can test performance yourself using the `node performance.js` process included in the package. Testing on my 2024 Mac
+Studio M4 Pro I get these results:
 
 ```
-    import TrieSearch from 'trie-search';
-    
-    const people = [
-      { name: 'andrew', age: 21, zip: 60600, id: 1 }, // person1
-      { name: 'andrew', age: 37, zip: 60601, id: 2 }, // person2
-      { name: 'andrew', age: 25, zip: 60602, id: 3 }, // person3
-      { name: 'andrew', age: 37, zip: 60603, id: 4 }  // person4
-    ];
-
-    const trie = new TrieSearch(['name', 'age', 'zip'], {
-      idFieldOrFunction: 'id' // Required to uniquely identify during union (AND)
-    });
-
-    trie.addAll(people);
-
-    trie.search(['andrew', '25'], TrieSearch.UNION_REDUCER); // [person3]
-    trie.search(['andrew', '50'], TrieSearch.UNION_REDUCER); // []
-    trie.search(['andrew', '37'], TrieSearch.UNION_REDUCER); // [person2, person4]
+English Dictionary loaded from JSON. Word count:  86036
+Memory before index: 52.72265625 MB
+Dictionary inserted and indexed into TrieSearch in  477  ms.
+Trie Node Count:  264508
+Trie Memory Used: 42.65234375 MB
+Retrieved "a" items ( 6251 ) in  8  ms.
+Retrieved "andr" items ( 18 ) in  0  ms.
+Retrieved "android" items ( 1 ) in  0  ms.
 ```
 
-## `remove()`
-```
-    import TrieSearch from 'trie-search';
-
-    const trie : TrieSearch<any> = new TrieSearch(['keyfield1', 'keyfield2']);
-    const keyValue = 'value';
-    const item1 = {keyfield1: keyValue};
-    const item2 = {keyfield2: keyValue};
-
-    trie.add(item1);
-    trie.add(item2);
-    trie.search(keyValue);              // [item1, item2]
-    trie.remove(keyValue, 'keyfield1');
-    trie.search(keyValue);              // [item2]
-```
-
+> Note! Retrieving longer words takes less time because it has to return fewer results.
 
 # Testing
+
+Testing is performed through Jest.
 
 ```
     $ npm i -g jest
     $ npm test
 
     Test Suites: 1 passed, 1 total
-    Tests:       87 passed, 87 total
+    Tests:       103 passed, 103 total
     Snapshots:   0 total
-    Time:        0.338 s, estimated 1 s
+    Time:        0.99 s, estimated 1 s
 ```
 
 # Contributing
@@ -416,11 +377,42 @@ You can specify this using the `indexField` option:
 Feel free to fork and make changes or submit a Pull Request :) I'm pretty busy but will eventually get around to getting your
 changes published.
 
+# Release Notes / Changelog
+
+## 2.2.0 Breaking Changes
+
+Items that are added are now automatically internally assigned a `$tsid` if no `idFieldOrFunction` is provided. This
+greatly reduced the internal complexity of trying to deduplicate results when searching by multiple phrases or words.
+
+If you want to skip this feature, you will need to implement the `idFieldOrFunction` yourself.
+
+**This means that without a custom `idFieldOrFunction`, all items inserted into the Trie must be an Object capable of 
+having a field `$tsid` assigned to them.**
+
+Additionally, as a part of this change, the entire `search` deduplication and aggregation process has been rewritten,
+which is what is introducing breaking changes.
+
+Now, if you `search('hello world')` the result will only be those items that both are indexed by `'hello'` AND `'world'`. 
+The same applies to `search(['hello', 'world'])`.
+
+However, now if you split phrases yourself you need to be more careful. Search phrases that are explicitly contained in
+an array, like `search(['hello world'])` will only return a result for an exact match on 'hello world'. By default this
+will never happen because `splitOnRegEx` by default splits on whitespace every time you add an item to the Trie. Since
+it splits on whitespace, nothing will every be indexed by `'hello world'`.
+
+Quite a bit of this is customizable through the `splitOnRegEx`, `splitOnGetRegEx`, and `defaultReducer` options. Please
+log a bug if you want this changed or tweaked.
+
+Another breaking update is that by default the `splitOnRegEx` and `splitOnGetRegEx` now split on both whitespace and 
+punctuation.
+
+In the meantime, if this update breaks your code, use `2.1.0`.
+
 # License
 
 The MIT License (MIT)
 
-Copyright (c) 2021 Joshua Jung
+Copyright (c) 2024 Joshua Jung
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -17,6 +17,7 @@ type TrieSearchOptions<T> = {
   idFieldOrFunction? : string | ((item : T) => string)
   expandRegexes? : { regex: RegExp, alternate : string }[]
   insertFullUnsplitKey? : boolean
+  defaultReducer? : TrieSearch.ReducerFn<T>
 }
 
 export default class TrieSearch<T> {

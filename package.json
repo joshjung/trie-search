@@ -3,7 +3,7 @@
   "author": "Joshua Jung <joshua.p.jung@gmail.com>",
   "license": "MIT",
   "description": "A trie implementation that maps keys to objects for rapid retrieval by phrases. Most common use will be for typeahead searches.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "main": "index.js",
   "types": "index.d.ts",
   "url": "https://github.com/joshjung/trie-search",
@@ -35,7 +35,8 @@
     "hashtable"
   ],
   "dependencies": {
-    "hasharray": "^1.1.1"
+    "hasharray": "^1.1.1",
+    "md5": "^2.3.0"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",
